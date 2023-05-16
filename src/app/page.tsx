@@ -1,6 +1,8 @@
 "use client";
 
-import { List, Fade, Pagination, AppBar, Box, Button, CircularProgress, Paper, TextField, Typography } from "@mui/material"
+import { Fade, AppBar, Box, Button, CircularProgress, Paper, TextField, Typography } from "@mui/material"
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import Image from 'next/image'
 import { useTheme } from '@mui/material/styles';
 import { Dispatch, SetStateAction, useState } from "react";
@@ -73,7 +75,7 @@ function Loading({ setState }: MainComponentProps) {
   setInterval(
     () => {
       setState(State.DISPLAY)
-    }, 2500
+    }, 1000
   )
   return <Fade in={true} timeout={1200}>
     <Paper sx={{ height: '100%', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
@@ -82,13 +84,58 @@ function Loading({ setState }: MainComponentProps) {
   </Fade>
 }
 
+type CustomPaginationProps = {
+  setPage: Dispatch<SetStateAction<number>>,
+}
+
+function CustomPagination({ setPage }: CustomPaginationProps) {
+  const theme = useTheme();
+  const { items } = usePagination({
+    count: 3,
+    onChange: (_, p) => setPage(p),
+  });
+
+  function getLabel(page: number) {
+    if (page === 1) {
+      return "Original Text";
+    } else {
+      return "Summary #" + (page - 1);
+    }
+  }
+
+  return (
+    <Box sx={{ width: '70%', display: "flex", justifyContent: "center" }}>
+      {items.map(({ page, type, selected, ...item }, index) => {
+        if (type === 'start-ellipsis' || type === 'end-ellipsis') {
+          // TODO (pdakin)
+          return null;
+        }
+
+        let content = type === 'page' ? getLabel(page) : type === 'previous' ? <ChevronLeftIcon /> : <ChevronRightIcon />;
+        let width = type === 'page' ? '100%' : '5%';
+        let elevation = type === 'page' ? 3 : 0;
+        return (
+          <Paper key={index} sx={{ marginX: .45 }} square elevation={elevation}>
+            <Button
+              sx={{ whiteSpace: 'nowrap', width: width }}
+              type="button"
+              {...item}
+            >
+              <Typography sx={{ fontWeight: selected ? 'bold' : undefined }} color="text.primary">{content}</Typography>
+            </Button>
+          </Paper>
+        );
+      })}
+    </Box >
+  );
+}
+
 function Display({ setState }: MainComponentProps) {
-  // TODO (pdakin): Support custom labels in the pagination list.
   const [page, setPage] = useState(1);
   return <Fade in={true} timeout={1200}>
     <Paper sx={{ height: '100%', width: '100%', display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
       <Paper sx={{ height: '100%', width: '50%', display: 'flex', alignItems: 'center', flexDirection: 'column' }} elevation={0}>
-        <Pagination onChange={(_, p) => { setPage(p) }} count={3} shape="rounded" variant="outlined" />
+        <CustomPagination setPage={setPage} />
         <Typography sx={{ marginY: 3 }} >#{page} - Note that the Pagination page prop starts at 1 to match the requirement of including the value in the URL, while the TablePagination page prop starts at 0 to match the requirement of zero-based JavaScript arrays that comes with rendering a lot of tabular data.</Typography>
       </Paper>
     </Paper>
@@ -107,7 +154,6 @@ export default function Home() {
           <Typography variant='h3'>Doctrine</Typography>
         </Box>
       </AppBar>
-      {/* TODO (pdakin): Animate transitions. */}
       {getMainComponent(state, setState)}
     </Paper >
   )
