@@ -10,15 +10,14 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import CustomPagination from "./CustomPagination";
 import Image from "next/image";
 import { useTheme } from "@mui/material/styles";
 import { Dispatch, SetStateAction, useState } from "react";
-import usePagination from "@mui/material/usePagination/usePagination";
 
 // TODO (pdakin): Things you did in Figma to make it work on first pass maybe not always the best.
 // Is there a way to write this without so many <Paper/> layers?
+// TODO (pdakin): Is it odd to do a stateful SPA using Next.js like this? Why do I have no routing?
 
 enum State {
   WELCOME,
@@ -29,24 +28,58 @@ enum State {
 
 type MainComponentProps = {
   setState: Dispatch<SetStateAction<State>>;
+  userText: string;
+  setUserText: Dispatch<SetStateAction<string>>;
 };
 
+type HomeWrapperProps = {
+  currKey: number;
+  setKey: Dispatch<SetStateAction<number>>;
+};
+
+// TODO (pdakin): Clean up unused text arguments below.
 function getMainComponent(
   state: State,
-  setState: Dispatch<SetStateAction<State>>
+  setState: Dispatch<SetStateAction<State>>,
+  userText: string,
+  setUserText: Dispatch<SetStateAction<string>>
 ) {
   switch (state) {
     case State.WELCOME: {
-      return <Welcome setState={setState} />;
+      return (
+        <Welcome
+          setState={setState}
+          userText={userText}
+          setUserText={setUserText}
+        />
+      );
     }
     case State.ENTRY: {
-      return <Entry setState={setState} />;
+      return (
+        <Entry
+          setState={setState}
+          userText={userText}
+          setUserText={setUserText}
+        />
+      );
     }
     case State.LOADING: {
-      return <Loading setState={setState} />;
+      return (
+        <Loading
+          setState={setState}
+          userText={userText}
+          setUserText={setUserText}
+        />
+      );
     }
     case State.DISPLAY: {
-      return <Display setState={setState} />;
+      return (
+        <Display
+          setState={setState}
+          userText={userText}
+          setUserText={setUserText}
+        />
+      );
     }
   }
 }
@@ -90,7 +123,7 @@ function Welcome({ setState }: MainComponentProps) {
   );
 }
 
-function Entry({ setState }: MainComponentProps) {
+function Entry({ setState, userText, setUserText }: MainComponentProps) {
   const theme = useTheme();
   return (
     <Fade in={true} timeout={1200}>
@@ -112,9 +145,10 @@ function Entry({ setState }: MainComponentProps) {
               maxRows={15}
               variant="filled"
               placeholder="Enter your corpus here..."
+              value={userText}
+              onChange={(e) => setUserText(e.target.value)}
             />
           </Box>
-          {/* TODO (pdakin): Going to need to do something with the text here... */}
           <Button
             onClick={() => setState(State.LOADING)}
             sx={{ marginY: 1 }}
@@ -131,7 +165,7 @@ function Entry({ setState }: MainComponentProps) {
 
 function Loading({ setState }: MainComponentProps) {
   // TODO (pdakin): Use API request success as transition here.
-  setInterval(() => {
+  setTimeout(() => {
     setState(State.DISPLAY);
   }, 1000);
   return (
@@ -151,70 +185,7 @@ function Loading({ setState }: MainComponentProps) {
   );
 }
 
-type CustomPaginationProps = {
-  setPage: Dispatch<SetStateAction<number>>;
-};
-
-function CustomPagination({ setPage }: CustomPaginationProps) {
-  const theme = useTheme();
-  const { items } = usePagination({
-    count: 3,
-    onChange: (_, p) => setPage(p),
-  });
-
-  function getLabel(page: number) {
-    if (page === 1) {
-      return "Original Text";
-    } else {
-      return "Summary #" + (page - 1);
-    }
-  }
-
-  return (
-    <Box sx={{ width: "70%", display: "flex", justifyContent: "center" }}>
-      {items.map(({ page, type, selected, ...item }, index) => {
-        if (type === "start-ellipsis" || type === "end-ellipsis") {
-          // TODO (pdakin)
-          return null;
-        }
-
-        let content =
-          type === "page" ? (
-            getLabel(page)
-          ) : type === "previous" ? (
-            <ChevronLeftIcon />
-          ) : (
-            <ChevronRightIcon />
-          );
-        let width = type === "page" ? "100%" : "5%";
-        let elevation = type === "page" ? 3 : 0;
-        return (
-          <Paper
-            key={index}
-            sx={{ marginX: 0.45 }}
-            square
-            elevation={elevation}
-          >
-            <Button
-              sx={{ whiteSpace: "nowrap", width: width }}
-              type="button"
-              {...item}
-            >
-              <Typography
-                sx={{ fontWeight: selected ? "bold" : undefined }}
-                color="text.primary"
-              >
-                {content}
-              </Typography>
-            </Button>
-          </Paper>
-        );
-      })}
-    </Box>
-  );
-}
-
-function Display({ setState }: MainComponentProps) {
+function Display({ setState, userText }: MainComponentProps) {
   const [page, setPage] = useState(1);
   return (
     <Fade in={true} timeout={1200}>
@@ -244,6 +215,7 @@ function Display({ setState }: MainComponentProps) {
             TablePagination page prop starts at 0 to match the requirement of
             zero-based JavaScript arrays that comes with rendering a lot of
             tabular data.
+            {userText}
           </Typography>
         </Paper>
       </Paper>
@@ -251,8 +223,9 @@ function Display({ setState }: MainComponentProps) {
   );
 }
 
-export default function Home() {
+function HomeWrapper({ currKey, setKey }: HomeWrapperProps) {
   const [state, setState] = useState(State.WELCOME);
+  const [userText, setUserText] = useState("");
   return (
     <Paper
       sx={{
@@ -271,7 +244,15 @@ export default function Home() {
         <Box
           sx={{ height: "75%", width: 32, position: "relative", marginY: 1.9 }}
         >
-          <Image src="/doctrine_logo.png" fill={true} alt="" />
+          <Image
+            onClick={() => {
+              setState(State.WELCOME);
+              setKey(currKey + 1);
+            }}
+            src="/doctrine_logo.png"
+            fill={true}
+            alt=""
+          />
         </Box>
         <Box
           sx={{
@@ -284,7 +265,13 @@ export default function Home() {
           <Typography variant="h3">Doctrine</Typography>
         </Box>
       </AppBar>
-      {getMainComponent(state, setState)}
+      {getMainComponent(state, setState, userText, setUserText)}
     </Paper>
   );
+}
+
+export default function Home() {
+  // Key used to clear state when image is clicked to revert home.
+  const [key, setKey] = useState(0);
+  return <HomeWrapper key={key} currKey={key} setKey={setKey} />;
 }
