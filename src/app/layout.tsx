@@ -4,12 +4,9 @@
 "use client";
 
 import "./globals.css";
-import { Inter } from "next/font/google";
 
 import Theme from "./theme";
 import { ThemeProvider } from "@mui/material/styles";
-
-const inter = Inter({ subsets: ["latin"] });
 
 // export const metadata = {
 //   title: 'Create Next App',
@@ -24,7 +21,7 @@ export default function RootLayout({
   return (
     <ThemeProvider theme={Theme}>
       <html lang="en">
-        <body className={inter.className}>{children}</body>
+        <body suppressHydrationWarning={true}>{children}</body>
       </html>
     </ThemeProvider>
   );

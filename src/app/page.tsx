@@ -226,11 +226,13 @@ function Display({ setState, userText }: MainComponentProps) {
 function HomeWrapper({ currKey, setKey }: HomeWrapperProps) {
   const [state, setState] = useState(State.WELCOME);
   const [userText, setUserText] = useState("");
+  // TODO (pdakin): Is there a more dynamic way to avoid setting minHeight below?
   return (
     <Paper
       sx={{
         width: "100vw",
         height: "100vh",
+        minHeight: 600,
         display: "flex",
         flexDirection: "column",
       }}
@@ -252,6 +254,7 @@ function HomeWrapper({ currKey, setKey }: HomeWrapperProps) {
             src="/doctrine_logo.png"
             fill={true}
             alt=""
+            sizes="120,32"
           />
         </Box>
         <Box
