@@ -1,0 +1,91 @@
+Input JSON with keys "t", "maxw", "minw".
+
+Job described step by step:
+
+1 Identify word limits "maxw", "minw".
+2 Summarize "t" respecting word limits.
+3 Count words in result of (2).
+4 Check whether result (3) matches constraint (1).
+5 If (4) is false, output new summary that matches constraint (1).
+
+Here are examples:
+
+Input:
+{
+"t": "Alexander McQueen was born on 17 March 1969 at University Hospital Lewisham in Lewisham, London,[5] to Ronald and Joyce McQueen, the youngest of six children.[6][7] His Scottish father worked as a taxi driver, and his mother a social science teacher.[8][3] It was reported that he grew up in a council flat,[9] but, in fact, the McQueens moved to a terraced house in Stratford in his first year.[10] McQueen attended Carpenters Road Primary School, before going to Rokeby School.[11] He was interested in clothes from a young age. As the youngest of six children, McQueen began experimenting with fashion by making dresses for his three sisters. His earliest fashion memory reaches back to when he was just three years old, drawing a dress on the wall of his East London family home. He was also fascinated by birds and was a member of the Young Ornithologists' Club; later, in his professional career, he often used birds as motifs in his designs.[8][12]",
+"maxw": "eighty",
+"summary_min_word_count: "thirty"
+}
+
+Output:
+{
+"1": "Max words is eighty and min words is thirty. My summary has between thirty and eighty words.",
+"2": "McQueen was born in 1969 to a large middle class London family. He showed an interest in clothes from a young age, tailoring dresses for his sisters. Another interest of his was birds."
+"3": "Result two has thirty-three words.",
+"4": "Thirty-three words is greater than thirty words and less than eighty words.",
+"5": "Constraint matches, no change."
+}
+
+Input:
+{
+"t": "McQueen was born in 1969 to a large middle class London family. He showed an interest in clothes from a young age, tailoring dresses for his sisters. Another interest of his was birds.",
+"maxw": "sixteen",
+"minw": "eight"
+}
+
+Output:
+{
+"1": "Max words is sixteen and min words is eight. My summary has between eight and sixteen words.",
+"2": "McQueen was born in 1969 in London. Early on, he showed interest in clothes and birds." 
+"3": "Result two has sixteen words.",
+"4": "Sixteen words is greater than thirty words and less than eighty words.",
+"5": "Constraint matches, no change."
+}
+
+Input:
+{
+"t": "Initially a successful venue, the track ran into financial difficulties due to a protracted, gambling-related horseman boycott removing it from the upper echelons of racing that would last until the Winn era (see below). In 1894 the New Louisville Jockey Club was incorporated with the new capitalization and improved facilities. Despite this, the business floundered until 1902, when a syndicate led by Col. Matt Winn of Louisville acquired the facility. Under Winn, Churchill Downs prospered, and the Kentucky Derby then became the preeminent stakes race for three-year-old thoroughbred horses in North America. Thoroughbred owners began sending their successful Derby horses to compete in two other races. These two are the Preakness Stakes at the Pimlico Race Course, in Baltimore, and the Belmont Stakes in Elmont, New York. The three races offered large purses, and in 1919 Sir Barton became the first horse to win all three races. However, the term Triple Crown didn't come into use for another eleven years. In 1930, when Gallant Fox became the second horse to win all three races, sportswriter Charles Hatton brought the phrase into American usage. Fueled by the media, public interest in the possibility of a superhorse that could win the Triple Crown began in the weeks leading up to the Derby. Two years after the term went in use, the race (until that time ran in mid-May since inception) changed the date to the first Saturday in May. This change allows for a specific schedule for the Triple Crown races. Since 1931, the order of Triple Crown races has been the Kentucky Derby first, followed by the Preakness Stakes and then the Belmont Stakes. Before 1931, eleven times the Preakness was run before the Derby. On May 12, 1917, and again on May 13, 1922, the Preakness and the Derby took place on the same day. On eleven occasions the Belmont Stakes was run before the Preakness Stakes, and in 2020, the Belmont was run first, then the Kentucky Derby, and the Preakness Stakes last.",
+"maxw": "one hundred and thirty",
+"minw": "eighty"
+}
+
+Output:
+{
+"1": "Max words is one hundred and thirty and min words is eighty. My summary has between eighty and one hundred and thirty words.",
+"2": "Churchill Downs, the venue of the Kentucky Derby, faced financial difficulties before being acquired by Col. Matt Winn. Under Winn's leadership, Churchill Downs thrived, and the Kentucky Derby became the premier stakes race for three-year-old thoroughbred horses in North America. The Derby's success led to the creation of the Triple Crown, consisting of the Kentucky Derby, the Preakness Stakes, and the Belmont Stakes. The order of the races has been the same since 1931, with the Kentucky Derby first, followed by the Preakness Stakes and then the Belmont Stakes.",
+"3": "Result two has eighty-four words.",
+"4": "Eighty-four words is greater than eighty words and less than one hundred and thirty words.",
+"5": "Constraint matches, no change."
+}
+
+Input:
+{
+"t": "The motivations of the average person were not necessarily those of their faction;[24][25] some Northern soldiers were indifferent on the subject of slavery, but a general pattern can be established.[26] As the war dragged on, more and more Unionists came to support the abolition of slavery, whether on moral grounds or as a means to cripple the Confederacy.[27] Confederate soldiers fought the war primarily to protect a Southern society of which slavery was an integral part.[28][29] Opponents of slavery considered slavery an anachronistic evil incompatible with republicanism. The strategy of the anti-slavery forces was containment—to stop the expansion of slavery and thereby put it on a path to ultimate extinction.[30] The slaveholding interests in the South denounced this strategy as infringing upon their constitutional rights.[31] Southern whites believed that the emancipation of slaves would destroy the South's economy, because of the large amount of capital invested in slaves and fears of integrating the ex-slave black population.[32] In particular, many Southerners feared a repeat of the 1804 Haiti massacre (referred to at the time as the horrors of Santo Domingo),[33][34] in which former slaves systematically murdered most of what was left of the country's white population—including men, women, children, and even many sympathetic to abolition—after the successful slave revolt in Haiti. Historian Thomas Fleming points to the historical phrase a disease in the public mind used by critics of this idea and proposes it contributed to the segregation in the Jim Crow era following emancipation.[35] These fears were exacerbated by the 1859 attempt of John Brown to instigate an armed slave rebellion in the South.",
+"maxw": "one hundred and sixty",
+"minw": "one hundred and twenty"
+}
+
+Output:
+{
+"1": "Max words is one hundred and sixty and min words is one hundred and twenty. My summary has between one hundred and twenty and one hundred and sixty words.",
+"2": "During the Civil War, Unionists increasingly supported abolition as a means to cripple the Confederacy. Confederate soldiers fought to protect a society where slavery was integral. Anti-slavery forces aimed to contain and eventually extinguish slavery, which they saw as anachronistic and incompatible with republicanism. Southern whites feared emancipation would devastate their economy, given the capital invested in slaves and integration fears. They particularly feared a repeat of the 1804 Haiti massacre, where former slaves killed the remaining white population. Historian Thomas Fleming suggests these fears contributed to segregation in the post-emancipation Jim Crow era.",
+"3": "Result two has one hundred and one words.",
+"4": "One hundred and one words does not match the constraint of greater than one hundred and twenty words. I will rewrite to match the constraint.",
+"5": "The Civil War saw a shift in Unionist sentiment towards supporting abolition, either on moral grounds or as a tactic to weaken the Confederacy. Confederate soldiers primarily fought to protect a Southern society in which slavery was a fundamental component. Anti-slavery forces aimed to contain slavery with the ultimate goal of its eradication, viewing it as an outdated evil inconsistent with republicanism. Southern whites, however, feared that emancipation would severely damage their economy, as it was heavily reliant on slave labor and capital invested in slaves. There were also fears around the integration of the ex-slave black population, and a specific dread of a repeat of the horrific 1804 Haiti massacre where ex-slaves systematically killed the white population. Historian Thomas Fleming posits that these fears, seen as a 'disease in the public mind', contributed to the segregation policies implemented in the Jim Crow era following emancipation."
+}
+
+Input:
+{
+"t": "States' rights was an ideology formulated and applied as a means of advancing slave state interests through federal authority.[89] As historian Thomas L. Krannawitter points out, the Southern demand for federal slave protection represented a demand for an unprecedented expansion of Federal power.[90][91] Before the Civil War, the Southern states supported the use of federal powers to enforce and extend slavery, as with the Fugitive Slave Act of 1850 and the Dred Scott v. Sandford decision.[92][93] The faction that pushed for secession often infringed on states' rights. Because of the overrepresentation of pro-slavery factions in the federal government, many Northerners, even non-abolitionists, feared the Slave Power conspiracy.[92][93] Some Northern states resisted the enforcement of the Fugitive Slave Act. Historian Eric Foner states that the act could hardly have been designed to arouse greater opposition in the North. It overrode numerous state and local laws and legal procedures and 'commanded' individual citizens to assist, when called upon, in capturing runaways. He continues, It certainly did not reveal, on the part of slaveholders, sensitivity to states' rights.[85] According to historian Paul Finkelman, the southern states mostly complained that the northern states were asserting their states' rights and that the national government was not powerful enough to counter these northern claims.[86] The Confederate Constitution also federally required slavery to be legal in all Confederate states and claimed territories.",
+"maxw": "forty",
+"minw": "sixty" 
+}
+
+Output:
+{
+"1": "Max words is sixty and min words is forty. My summary has between forty and sixty words.",
+"2": "States' rights pre-Civil War promoted slave states' interests through federal authority. South wanted federal powers to protect slavery, while secession undermined states' rights. Tensions arose over Fugitive Slave Act enforcement.",
+"3": "Result two has forty-one words.",
+"4": "Forty-one words is greater than forty words and less than sixty words.",
+"5": "Constraint matches, no change."
+}
