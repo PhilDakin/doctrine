@@ -1,3 +1,4 @@
+export const EXTRACT_BASE = `
 Input JSON with key "text".
 
 Your job is to take text "text", extract all information conveyed by the text into a list of complete sentences, and provide a short title describing the content of the text.
@@ -53,4 +54,4 @@ Output:
     "In 1767, James Parsons published The Remains of Japhet, a historical enquiry into the affinity and origins of the European languages.",
     "James Parsons compared a 1000-word lexicon of Irish and Welsh and concluded that they were originally the same, and then he compared the numerals in many other languages."
     ]
-}
+}`;

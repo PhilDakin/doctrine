@@ -1,10 +1,23 @@
 // TODO (pdakin): Hide your API key.
 // TODO (pdakin): Do we need to be worried about prompt injection?
-// TODO (pdakin): Prompt should NOT be visible to the user.
+// TODO (pdakin): Prompt should NOT be visible to the user - right now this is completely fucked
+//                because of the client components theme issue.
 // TODO (pdakin): Use named types.
+// TODO (pdakin): API access will need to be asynchronous.
 
-function constructExtractionPrompt(corpus: string) {
-  return "";
+async function constructExtractionPrompt(corpus: string) {
+  // TODO (pdakin): Sanitization.
+  const response = await fetch(
+    "/prompts?" + new URLSearchParams({ name: "extract" })
+  );
+  const json = await response.json();
+  const promptBase = json.base;
+  return `${promptBase}
+Input:
+{
+    "text": ${corpus};
+}
+  `;
 }
 
 function constructRankingPrompt(extractionResult: {
@@ -14,10 +27,13 @@ function constructRankingPrompt(extractionResult: {
   return "";
 }
 
-function constructRewritePrompt(partialInfoListScored: (string | number)[][]) {}
+function constructRewritePrompt(partialInfoListScored: (string | number)[][]) {
+  return "";
+}
 
-function extract(corpus: string) {
-  const prompt = constructExtractionPrompt(corpus);
+async function extract(corpus: string) {
+  const prompt = await constructExtractionPrompt(corpus);
+  console.log(prompt);
   // TODO (pdakin): Use the LLM.
   return {
     title: "1996 Eurovision",
@@ -135,9 +151,8 @@ export async function summarize(
   // TODO (pdakin): It is really important this function is not called during a render cycle to avoid
   // some API loop bug. How do I assert this?
 
-  const extractResult = extract(corpus);
+  const extractResult = await extract(corpus);
   const infoListScored = rank(extractResult).infoListScored;
-
   const summaryCount = getTotalSummaryCount(infoListScored.length);
 
   const sortedInfoListScored = infoListScored
