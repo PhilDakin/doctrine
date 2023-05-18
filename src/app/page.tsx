@@ -14,7 +14,7 @@ import CustomPagination from "./CustomPagination";
 import Image from "next/image";
 import { useTheme } from "@mui/material/styles";
 import { Dispatch, SetStateAction, useState } from "react";
-import { summarize } from "./Llm";
+import { getTotalSummaryCount, summarize } from "./Llm";
 
 // TODO (pdakin): Things you did in Figma to make it work on first pass maybe not always the best.
 // Is there a way to write this without so many <Paper/> layers?
@@ -33,6 +33,8 @@ type MainComponentProps = {
   setUserText: Dispatch<SetStateAction<string>>;
   infoListScored: (string | number)[][];
   setInfoListScored: Dispatch<SetStateAction<(string | number)[][]>>;
+  pageEntries: string[];
+  setPageEntries: Dispatch<SetStateAction<string[]>>;
 };
 
 type HomeWrapperProps = {
@@ -47,7 +49,9 @@ function getMainComponent(
   userText: string,
   setUserText: Dispatch<SetStateAction<string>>,
   infoListScored: (string | number)[][],
-  setInfoListScored: Dispatch<SetStateAction<(string | number)[][]>>
+  setInfoListScored: Dispatch<SetStateAction<(string | number)[][]>>,
+  pageEntries: string[],
+  setPageEntries: Dispatch<SetStateAction<string[]>>
 ) {
   switch (state) {
     case State.WELCOME: {
@@ -58,6 +62,8 @@ function getMainComponent(
           setUserText={setUserText}
           infoListScored={infoListScored}
           setInfoListScored={setInfoListScored}
+          pageEntries={pageEntries}
+          setPageEntries={setPageEntries}
         />
       );
     }
@@ -69,6 +75,8 @@ function getMainComponent(
           setUserText={setUserText}
           infoListScored={infoListScored}
           setInfoListScored={setInfoListScored}
+          pageEntries={pageEntries}
+          setPageEntries={setPageEntries}
         />
       );
     }
@@ -80,6 +88,8 @@ function getMainComponent(
           setUserText={setUserText}
           infoListScored={infoListScored}
           setInfoListScored={setInfoListScored}
+          pageEntries={pageEntries}
+          setPageEntries={setPageEntries}
         />
       );
     }
@@ -91,6 +101,8 @@ function getMainComponent(
           setUserText={setUserText}
           infoListScored={infoListScored}
           setInfoListScored={setInfoListScored}
+          pageEntries={pageEntries}
+          setPageEntries={setPageEntries}
         />
       );
     }
@@ -142,6 +154,8 @@ function Entry({
   setUserText,
   infoListScored,
   setInfoListScored,
+  pageEntries,
+  setPageEntries,
 }: MainComponentProps) {
   const theme = useTheme();
   return (
@@ -170,8 +184,10 @@ function Entry({
           </Box>
           <Button
             onClick={() => {
-              summarize(userText, (newInfoListScored) => {
+              summarize(userText, (newInfoListScored, newPageEntries) => {
+                // TODO (pdakin): Timing coordination with loading page when hitting API.
                 setInfoListScored(newInfoListScored);
+                setPageEntries(newPageEntries);
               });
               setState(State.LOADING);
             }}
@@ -215,29 +231,11 @@ function Display({
   setUserText,
   infoListScored,
   setInfoListScored,
+  pageEntries,
+  setPageEntries,
 }: MainComponentProps) {
   const [page, setPage] = useState(1);
-  const numPages = Math.floor(Math.log2(infoListScored.length));
-
-  // TODO (pdakin): Push sort up.
-  const sortedInfoListScored = infoListScored
-    .map((e) => e) // TODO (pdakin): Cleaner way to deep copy?
-    .sort((l: (string | number)[], r: (string | number)[]) =>
-      Number(l[1] < r[1])
-    );
-  const numEntries = sortedInfoListScored.length / Math.pow(2, page - 1);
-
-  function getEntry() {
-    return sortedInfoListScored
-      .slice(0, numEntries)
-      .map((e: (string | number)[], index: number) => (
-        <p key={index}>
-          {e[0] + " " + String(e[1])}
-          <br></br>
-        </p>
-      ));
-  }
-
+  const numPages = getTotalSummaryCount(infoListScored.length);
   return (
     <Fade in={true} timeout={1200}>
       <Paper
@@ -261,7 +259,7 @@ function Display({
         >
           <CustomPagination setPage={setPage} numPages={numPages} />
           <Typography sx={{ marginY: 3 }}>
-            {page == 1 ? userText : getEntry()}
+            {pageEntries[page - 1] /* Page is one-indexed. */}
           </Typography>
         </Paper>
       </Paper>
@@ -273,6 +271,8 @@ function HomeWrapper({ currKey, setKey }: HomeWrapperProps) {
   const [state, setState] = useState(State.WELCOME);
   const [userText, setUserText] = useState("");
   const [infoListScored, setInfoListScored] = useState([[]]);
+  const [pageEntries, setPageEntries] = useState([]);
+
   // TODO (pdakin): Is there a more dynamic way to avoid setting minHeight below?
   return (
     <Paper
@@ -321,7 +321,9 @@ function HomeWrapper({ currKey, setKey }: HomeWrapperProps) {
         userText,
         setUserText,
         infoListScored,
-        setInfoListScored
+        setInfoListScored,
+        pageEntries,
+        setPageEntries
       )}
     </Paper>
   );

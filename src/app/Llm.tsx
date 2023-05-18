@@ -14,6 +14,8 @@ function constructRankingPrompt(extractionResult: {
   return "";
 }
 
+function constructRewritePrompt(partialInfoListScored: (string | number)[][]) {}
+
 function extract(corpus: string) {
   const prompt = constructExtractionPrompt(corpus);
   // TODO (pdakin): Use the LLM.
@@ -110,11 +112,48 @@ function rank(extractionResult: { title: string; infoList: string[] }) {
   };
 }
 
+function rewrite(partialInfoListScored: (string | number)[][]) {
+  let prompt = constructRewritePrompt(partialInfoListScored);
+  // TODO (pdakin): Use LLM.
+  return (
+    "Hey this is the result of a rewrite call " +
+    String(partialInfoListScored.length)
+  );
+}
+
+export function getTotalSummaryCount(infoListLength: number) {
+  return Math.floor(Math.log2(infoListLength));
+}
+
 export async function summarize(
   corpus: string,
-  callback: (infoListScored: (string | number)[][]) => void
+  callback: (
+    infoListScored: (string | number)[][],
+    pageEntries: string[]
+  ) => void
 ) {
+  // TODO (pdakin): It is really important this function is not called during a render cycle to avoid
+  // some API loop bug. How do I assert this?
+
   const extractResult = extract(corpus);
-  const rankResult = rank(extractResult);
-  callback(rankResult.infoListScored);
+  const infoListScored = rank(extractResult).infoListScored;
+
+  const summaryCount = getTotalSummaryCount(infoListScored.length);
+
+  const sortedInfoListScored = infoListScored
+    .map((e) => e) // TODO (pdakin): Cleaner way to deep copy?
+    .sort((l: (string | number)[], r: (string | number)[]) =>
+      Number(l[1] < r[1])
+    );
+
+  // Summary at index zero is just the original text.
+  let pageEntries = [corpus];
+  for (let i = 1; i < summaryCount; i++) {
+    const numEntries = sortedInfoListScored.length / Math.pow(2, i);
+    const text = rewrite(sortedInfoListScored.slice(0, numEntries));
+    pageEntries.push(text);
+  }
+
+  // TODO (pdakin): Actually necessary to keep scored list in state?
+  callback(infoListScored, pageEntries);
 }

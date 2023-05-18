@@ -3,7 +3,7 @@ import CustomPagination from "@/app/CustomPagination";
 
 it("CustomPagination snapshot match", () => {
   const component = renderer.create(
-    <CustomPagination setPage={jest.fn()}></CustomPagination>
+    <CustomPagination setPage={jest.fn()} numPages={3}></CustomPagination>
   );
 
   let tree = component.toJSON();
