@@ -67,10 +67,3 @@ Output:
     "James Parsons compared a 1000-word lexicon of Irish and Welsh and concluded that they were originally the same, and then he compared the numerals in many other languages."
     ]
 }
-
-Input:
-{
-"title": "",
-"info_list": [],
-"selection_count": ""
-}
