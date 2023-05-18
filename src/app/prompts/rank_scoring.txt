@@ -1,0 +1,91 @@
+Input JSON with key "title" and key "info_list".
+
+Suppose you are interested in the input "title" value. For each element of the "info_list" provide a score from 0 to 1 indicating how interesting this piece of information is.
+
+Your output should be a JSON with a "info_list_scored" pointing a list of (string, double) tuples representing the result of your job.
+
+Here are a few examples:
+
+Input:
+{
+"title": "1996 Eurovision",
+"info_list": [
+    "The Eurovision Song Contest 1996 was the 41st edition of the Eurovision Song Contest.",
+    "The contest was held on 18 May 1996 at the Oslo Spektrum in Oslo, Norway.",
+    "The event was organised by the European Broadcasting Union (EBU) and host broadcaster Norsk rikskringkasting (NRK).",
+    "Norwegian journalist and television presenter Ingvild Bryn and Norwegian singer Morten Harket presented the contest.",
+    "The contest took place in Norway due to the country's victory at the 1995 contest with the song Nocturne by Secret Garden.",
+    "Thirty countries submitted entries to the contest.",
+    "A non-public, audio-only qualifying round was held two months before the final to reduce the number of participants from 30 to 23.",
+    "The entries from Denmark, Germany, Hungary, Israel, Macedonia, Romania and Russia were eliminated in the qualifying round.",
+    "As a result, Germany was absent from the contest for the first time.",
+    "Ireland won the contest with the song The Voice, which was written by Brendan Graham and performed by Eimear Quinn.",
+    "This victory extended Ireland's record to seven contest wins, including four wins in the last five years.",
+    "Brendan Graham also recorded his second win as a songwriter in three years, having previously written the winning song at the 1994 contest.",
+    "Norway, Sweden, Croatia and Estonia were the other top five countries.",
+    "Croatia, Estonia and Portugal achieved their best results to date, with Portugal placing sixth.",
+    "The 1996 contest was the final one where results were determined solely by jury voting.",
+    "A trial use of televoting was introduced in the following year's event, leading to widespread adoption from 1998 onwards."
+    ]
+}
+Output:
+{
+"info_list_scored": [
+    ("The Eurovision Song Contest 1996 was the 41st edition of the Eurovision Song Contest.", 0.2),
+    ("The contest was held on 18 May 1996 at the Oslo Spektrum in Oslo, Norway.", 0.3),
+    ("The event was organised by the European Broadcasting Union (EBU) and host broadcaster Norsk rikskringkasting (NRK).", 0.2),
+    ("Norwegian journalist and television presenter Ingvild Bryn and Norwegian singer Morten Harket presented the contest.", 0.3),
+    ("The contest took place in Norway due to the country's victory at the 1995 contest with the song Nocturne by Secret Garden.", 0.6),
+    ("Thirty countries submitted entries to the contest.", 0.3),
+    ("A non-public, audio-only qualifying round was held two months before the final to reduce the number of participants from 30 to 23.", 0.4),
+    ("The entries from Denmark, Germany, Hungary, Israel, Macedonia, Romania and Russia were eliminated in the qualifying round.", 0.5),
+    ("As a result, Germany was absent from the contest for the first time.", 0.6),
+    ("Ireland won the contest with the song The Voice, which was written by Brendan Graham and performed by Eimear Quinn.", 0.9),
+    ("This victory extended Ireland's record to seven contest wins, including four wins in the last five years.", 0.8),
+    ("Brendan Graham also recorded his second win as a songwriter in three years, having previously written the winning song at the 1994 contest.", 0.7),
+    ("Norway, Sweden, Croatia and Estonia were the other top five countries.", 0.5),
+    ("Croatia, Estonia and Portugal achieved their best results to date, with Portugal placing sixth.", 0.5),
+    ("The 1996 contest was the final one where results were determined solely by jury voting.", 0.7),
+    ("A trial use of televoting was introduced in the following year's event, leading to widespread adoption from 1998 onwards.", 0.7)
+    ]
+}
+
+Input:
+{
+"title": "Celtic Studies",
+"info_list": [
+    "Written studies of the Celts, their cultures, and their languages can be traced back to classical Greek and Latin accounts.",
+    "The studies possibly began with Hecataeus in the 6th century BC.",
+    "Well-known authors who studied the Celts include Polybius, Posidonius, Pausanias, Diodorus Siculus, Julius Caesar and Strabo.",
+    "Modern Celtic studies originated in the 16th and 17th centuries, a period when many classical authors were rediscovered, published and translated.",
+    "Academic interest in Celtic languages stemmed from comparative and historical linguistics, established at the end of the 18th century.",
+    "In the 16th century, George Buchanan studied the Goidelic languages.",
+    "A significant breakthrough in Celtic linguistics occurred with the publication of Archaeologia Britannica in 1707 by Welsh scholar Edward Lhuyd.",
+    "Edward Lhuyd was the first to recognise that Gaulish, British and Irish belong to the same language family.",
+    "Edward Lhuyd also published an English version of a study by Paul-Yves Pezron of Gaulish.",
+    "In 1767, James Parsons published The Remains of Japhet, a historical enquiry into the affinity and origins of the European languages.",
+    "James Parsons compared a 1000-word lexicon of Irish and Welsh and concluded that they were originally the same, and then he compared the numerals in many other languages."
+    ]
+}
+Output:
+{
+"info_list_scored": [
+    ("Written studies of the Celts, their cultures, and their languages can be traced back to classical Greek and Latin accounts.", 0.5),
+    ("The studies possibly began with Hecataeus in the 6th century BC.", 0.6),
+    ("Well-known authors who studied the Celts include Polybius, Posidonius, Pausanias, Diodorus Siculus, Julius Caesar and Strabo.", 0.5),
+    ("Modern Celtic studies originated in the 16th and 17th centuries, a period when many classical authors were rediscovered, published and translated.", 0.7),
+    ("Academic interest in Celtic languages stemmed from comparative and historical linguistics, established at the end of the 18th century.", 0.8),
+    ("In the 16th century, George Buchanan studied the Goidelic languages.", 0.6),
+    ("A significant breakthrough in Celtic linguistics occurred with the publication of Archaeologia Britannica in 1707 by Welsh scholar Edward Lhuyd.", 0.9),
+    ("Edward Lhuyd was the first to recognise that Gaulish, British and Irish belong to the same language family.", 0.9),
+    ("Edward Lhuyd also published an English version of a study by Paul-Yves Pezron of Gaulish.", 0.6),
+    ("In 1767, James Parsons published The Remains of Japhet, a historical enquiry into the affinity and origins of the European languages.", 0.7),
+    ("James Parsons compared a 1000-word lexicon of Irish and Welsh and concluded that they were originally the same, and then he compared the numerals in many other languages.", 0.7)
+    ]
+}
+
+Input:
+{
+"title": "",
+"info_list": []
+}

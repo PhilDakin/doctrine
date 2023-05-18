@@ -1,0 +1,61 @@
+Input JSON with key "text".
+
+Your job is to take text "text", extract all information conveyed by the text into a list of complete sentences, and provide a short title describing the content of the text.
+
+Your output should be a JSON with a key "title" pointing to the string title and a key "info_list" pointing to a list of strings representing the result of your job.
+
+Here are a few examples:
+
+Input:
+{
+    "text": "The Eurovision Song Contest 1996 was the 41st edition of the Eurovision Song Contest, held on 18 May 1996 at the Oslo Spektrum in Oslo, Norway. Organised by the European Broadcasting Union (EBU) and host broadcaster Norsk rikskringkasting (NRK) and presented by Norwegian journalist and television presenter Ingvild Bryn and Norwegian singer Morten Harket, the contest was held in Norway following the country's victory at the 1995 contest with the song Nocturne by Secret Garden. Thirty countries submitted entries to the contest, with a non-public, audio-only qualifying round held two months before the final to reduce the number of participants from 30 to 23. The entries from Denmark, Germany, Hungary, Israel, Macedonia, Romania and Russia were subsequently eliminated, which resulted in Germany being absent from the contest for the first time. The winner was Ireland with the song The Voice, written by Brendan Graham and performed by Eimear Quinn. This gave the nation a record-extending seventh contest win, their fourth win in five years, with Graham also recording his second win as a songwriter in three years after having previously written the winning song at the 1994 contest. Norway, Sweden, Croatia and Estonia took the remaining places in the top five, with Croatia, Estonia and Portugal, which placed sixth, achieving the best results to date. This was the final contest where the results were determined solely by jury voting, with a trial use of televoting in the following year's event leading to widespread adoption from 1998 onwards."
+}
+Output:
+{
+"title": "1996 Eurovision",
+"info_list": [
+    "The Eurovision Song Contest 1996 was the 41st edition of the Eurovision Song Contest.",
+    "The contest was held on 18 May 1996 at the Oslo Spektrum in Oslo, Norway.",
+    "The event was organised by the European Broadcasting Union (EBU) and host broadcaster Norsk rikskringkasting (NRK).",
+    "Norwegian journalist and television presenter Ingvild Bryn and Norwegian singer Morten Harket presented the contest.",
+    "The contest took place in Norway due to the country's victory at the 1995 contest with the song Nocturne by Secret Garden.",
+    "Thirty countries submitted entries to the contest.",
+    "A non-public, audio-only qualifying round was held two months before the final to reduce the number of participants from 30 to 23.",
+    "The entries from Denmark, Germany, Hungary, Israel, Macedonia, Romania and Russia were eliminated in the qualifying round.",
+    "As a result, Germany was absent from the contest for the first time.",
+    "Ireland won the contest with the song The Voice, which was written by Brendan Graham and performed by Eimear Quinn.",
+    "This victory extended Ireland's record to seven contest wins, including four wins in the last five years.",
+    "Brendan Graham also recorded his second win as a songwriter in three years, having previously written the winning song at the 1994 contest.",
+    "Norway, Sweden, Croatia and Estonia were the other top five countries.",
+    "Croatia, Estonia and Portugal achieved their best results to date, with Portugal placing sixth.",
+    "The 1996 contest was the final one where results were determined solely by jury voting.",
+    "A trial use of televoting was introduced in the following year's event, leading to widespread adoption from 1998 onwards."
+    ]
+}
+
+Input:
+{
+    "text": "Written studies of the Celts, their cultures, and their languages go back to classical Greek and Latin accounts, possibly beginning with Hecataeus in the 6th century BC[1] and best known through such authors as Polybius, Posidonius, Pausanias, Diodorus Siculus, Julius Caesar and Strabo. Modern Celtic studies originated in the 16th and 17th centuries, when many of these classical authors were rediscovered, published and translated.[1] Academic interest in Celtic languages grew out of comparative and historical linguistics, which was itself established at the end of the 18th century. In the 16th century, George Buchanan studied the Goidelic languages. The first major breakthrough in Celtic linguistics came with the publication of Archaeologia Britannica (1707) by the Welsh scholar Edward Lhuyd, who was the first to recognise that Gaulish, British and Irish belong to the same language family.[1] He also published an English version of a study by Paul-Yves Pezron of Gaulish. In 1767 James Parsons published his study The Remains of Japhet, being historical enquiries into the affinity and origins of the European languages. He compared a 1000-word lexicon of Irish and Welsh and concluded that they were originally the same, then comparing the numerals in many other languages."
+}
+Output:
+{
+"title": "Celtic Studies",
+"info_list": [
+    "Written studies of the Celts, their cultures, and their languages can be traced back to classical Greek and Latin accounts.",
+    "The studies possibly began with Hecataeus in the 6th century BC.",
+    "Well-known authors who studied the Celts include Polybius, Posidonius, Pausanias, Diodorus Siculus, Julius Caesar and Strabo.",
+    "Modern Celtic studies originated in the 16th and 17th centuries, a period when many classical authors were rediscovered, published and translated.",
+    "Academic interest in Celtic languages stemmed from comparative and historical linguistics, established at the end of the 18th century.",
+    "In the 16th century, George Buchanan studied the Goidelic languages.",
+    "A significant breakthrough in Celtic linguistics occurred with the publication of Archaeologia Britannica in 1707 by Welsh scholar Edward Lhuyd.",
+    "Edward Lhuyd was the first to recognise that Gaulish, British and Irish belong to the same language family.",
+    "Edward Lhuyd also published an English version of a study by Paul-Yves Pezron of Gaulish.",
+    "In 1767, James Parsons published The Remains of Japhet, a historical enquiry into the affinity and origins of the European languages.",
+    "James Parsons compared a 1000-word lexicon of Irish and Welsh and concluded that they were originally the same, and then he compared the numerals in many other languages."
+    ]
+}
+
+Input:
+{
+    "text": ""
+}
