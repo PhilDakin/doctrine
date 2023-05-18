@@ -14,6 +14,7 @@ import CustomPagination from "./CustomPagination";
 import Image from "next/image";
 import { useTheme } from "@mui/material/styles";
 import { Dispatch, SetStateAction, useState } from "react";
+import { summarize } from "./Llm";
 
 // TODO (pdakin): Things you did in Figma to make it work on first pass maybe not always the best.
 // Is there a way to write this without so many <Paper/> layers?
@@ -30,6 +31,8 @@ type MainComponentProps = {
   setState: Dispatch<SetStateAction<State>>;
   userText: string;
   setUserText: Dispatch<SetStateAction<string>>;
+  infoListScored: (string | number)[][];
+  setInfoListScored: Dispatch<SetStateAction<(string | number)[][]>>;
 };
 
 type HomeWrapperProps = {
@@ -37,12 +40,14 @@ type HomeWrapperProps = {
   setKey: Dispatch<SetStateAction<number>>;
 };
 
-// TODO (pdakin): Clean up unused text arguments below.
+// TODO (pdakin): Clean up argument blow-up below.
 function getMainComponent(
   state: State,
   setState: Dispatch<SetStateAction<State>>,
   userText: string,
-  setUserText: Dispatch<SetStateAction<string>>
+  setUserText: Dispatch<SetStateAction<string>>,
+  infoListScored: (string | number)[][],
+  setInfoListScored: Dispatch<SetStateAction<(string | number)[][]>>
 ) {
   switch (state) {
     case State.WELCOME: {
@@ -51,6 +56,8 @@ function getMainComponent(
           setState={setState}
           userText={userText}
           setUserText={setUserText}
+          infoListScored={infoListScored}
+          setInfoListScored={setInfoListScored}
         />
       );
     }
@@ -60,6 +67,8 @@ function getMainComponent(
           setState={setState}
           userText={userText}
           setUserText={setUserText}
+          infoListScored={infoListScored}
+          setInfoListScored={setInfoListScored}
         />
       );
     }
@@ -69,6 +78,8 @@ function getMainComponent(
           setState={setState}
           userText={userText}
           setUserText={setUserText}
+          infoListScored={infoListScored}
+          setInfoListScored={setInfoListScored}
         />
       );
     }
@@ -78,6 +89,8 @@ function getMainComponent(
           setState={setState}
           userText={userText}
           setUserText={setUserText}
+          infoListScored={infoListScored}
+          setInfoListScored={setInfoListScored}
         />
       );
     }
@@ -123,7 +136,13 @@ function Welcome({ setState }: MainComponentProps) {
   );
 }
 
-function Entry({ setState, userText, setUserText }: MainComponentProps) {
+function Entry({
+  setState,
+  userText,
+  setUserText,
+  infoListScored,
+  setInfoListScored,
+}: MainComponentProps) {
   const theme = useTheme();
   return (
     <Fade in={true} timeout={1200}>
@@ -150,7 +169,12 @@ function Entry({ setState, userText, setUserText }: MainComponentProps) {
             />
           </Box>
           <Button
-            onClick={() => setState(State.LOADING)}
+            onClick={() => {
+              summarize(userText, (newInfoListScored) => {
+                setInfoListScored(newInfoListScored);
+              });
+              setState(State.LOADING);
+            }}
             sx={{ marginY: 1 }}
             style={{ backgroundColor: theme.palette.secondary.main }}
             color="primary"
@@ -185,8 +209,35 @@ function Loading({ setState }: MainComponentProps) {
   );
 }
 
-function Display({ setState, userText }: MainComponentProps) {
+function Display({
+  setState,
+  userText,
+  setUserText,
+  infoListScored,
+  setInfoListScored,
+}: MainComponentProps) {
   const [page, setPage] = useState(1);
+  const numPages = Math.floor(Math.log2(infoListScored.length));
+
+  // TODO (pdakin): Push sort up.
+  const sortedInfoListScored = infoListScored
+    .map((e) => e) // TODO (pdakin): Cleaner way to deep copy?
+    .sort((l: (string | number)[], r: (string | number)[]) =>
+      Number(l[1] < r[1])
+    );
+  const numEntries = sortedInfoListScored.length / Math.pow(2, page - 1);
+
+  function getEntry() {
+    return sortedInfoListScored
+      .slice(0, numEntries)
+      .map((e: (string | number)[], index: number) => (
+        <p key={index}>
+          {e[0] + " " + String(e[1])}
+          <br></br>
+        </p>
+      ));
+  }
+
   return (
     <Fade in={true} timeout={1200}>
       <Paper
@@ -208,14 +259,9 @@ function Display({ setState, userText }: MainComponentProps) {
           }}
           elevation={0}
         >
-          <CustomPagination setPage={setPage} />
+          <CustomPagination setPage={setPage} numPages={numPages} />
           <Typography sx={{ marginY: 3 }}>
-            #{page} - Note that the Pagination page prop starts at 1 to match
-            the requirement of including the value in the URL, while the
-            TablePagination page prop starts at 0 to match the requirement of
-            zero-based JavaScript arrays that comes with rendering a lot of
-            tabular data.
-            {userText}
+            {page == 1 ? userText : getEntry()}
           </Typography>
         </Paper>
       </Paper>
@@ -226,6 +272,7 @@ function Display({ setState, userText }: MainComponentProps) {
 function HomeWrapper({ currKey, setKey }: HomeWrapperProps) {
   const [state, setState] = useState(State.WELCOME);
   const [userText, setUserText] = useState("");
+  const [infoListScored, setInfoListScored] = useState([[]]);
   // TODO (pdakin): Is there a more dynamic way to avoid setting minHeight below?
   return (
     <Paper
@@ -268,7 +315,14 @@ function HomeWrapper({ currKey, setKey }: HomeWrapperProps) {
           <Typography variant="h3">Doctrine</Typography>
         </Box>
       </AppBar>
-      {getMainComponent(state, setState, userText, setUserText)}
+      {getMainComponent(
+        state,
+        setState,
+        userText,
+        setUserText,
+        infoListScored,
+        setInfoListScored
+      )}
     </Paper>
   );
 }

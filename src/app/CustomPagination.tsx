@@ -6,11 +6,15 @@ import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 
 type CustomPaginationProps = {
   setPage: Dispatch<SetStateAction<number>>;
+  numPages: number;
 };
 
-export default function CustomPagination({ setPage }: CustomPaginationProps) {
+export default function CustomPagination({
+  setPage,
+  numPages,
+}: CustomPaginationProps) {
   const { items } = usePagination({
-    count: 3,
+    count: numPages,
     onChange: (_, p) => setPage(p),
   });
 
