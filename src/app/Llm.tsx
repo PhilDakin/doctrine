@@ -5,8 +5,12 @@
 // TODO (pdakin): Use named types.
 // TODO (pdakin): API access will need to be asynchronous.
 
+import { Configuration, OpenAIApi } from "openai";
+
+const GPT_35_TURBO_API_CONTEXT_LIMIT = 4097;
+
 async function constructExtractionPrompt(corpus: string) {
-  // TODO (pdakin): Sanitization.
+  // TODO (pdakin): Corpus sanitization.
   const response = await fetch(
     "/prompts?" + new URLSearchParams({ name: "extract" })
   );
@@ -16,125 +20,116 @@ async function constructExtractionPrompt(corpus: string) {
 Input:
 {
     "text": ${corpus};
-}
-  `;
+}`;
 }
 
-function constructRankingPrompt(extractionResult: {
+async function constructRankingPrompt(extractionResult: {
   title: string;
   infoList: string[];
 }) {
-  return "";
+  const response = await fetch(
+    "/prompts?" + new URLSearchParams({ name: "rank" })
+  );
+  const json = await response.json();
+  const promptBase = json.base;
+  return `${promptBase}
+Input:
+${JSON.stringify(extractionResult, null, 2)}`;
 }
 
-function constructRewritePrompt(partialInfoListScored: (string | number)[][]) {
-  return "";
+async function constructRewritePrompt(
+  title: string,
+  partialInfoListScored: (string | number)[][]
+) {
+  const response = await fetch(
+    "/prompts?" + new URLSearchParams({ name: "rewrite" })
+  );
+  const json = await response.json();
+  const promptBase = json.base;
+  return `${promptBase}
+Input:
+${JSON.stringify({ title: title, info_list: partialInfoListScored }, null, 2)}`;
+}
+
+// TODO (pdakin): Should not re-establish connection to OpenAI multiple times on each call.
+async function submitPrompt(prompt: string) {
+  const configuration = new Configuration({
+    // apiKey: process.env.OPENAI_API_KEY,
+    apiKey: "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",
+  });
+  const openai = new OpenAIApi(configuration);
+
+  const result = await openai.createChatCompletion({
+    model: "gpt-3.5-turbo",
+    messages: [
+      {
+        role: "user",
+        content: prompt,
+      },
+    ],
+    temperature: 0,
+    presence_penalty: 0.0, // TODO (pdakin): Presence penalty worth using?
+  });
+
+  // TODO (pdakin): Handling errors from OpenAI.
+
+  let response = result.data.choices[0];
+  console.log(
+    "Received OpenAI response with finish reason: ",
+    response.finish_reason
+  );
+  if (!response.message) {
+    console.log("Undefined message! This should never happen.");
+    return;
+  }
+
+  try {
+    const extractedInfo = JSON.parse(response.message.content.substring(8));
+    return extractedInfo;
+  } catch (extractionError) {
+    console.error(
+      "Failed to parse LLM response as JSON: ",
+      response.message.content
+    );
+    return null;
+  }
 }
 
 async function extract(corpus: string) {
   const prompt = await constructExtractionPrompt(corpus);
-  console.log(prompt);
-  // TODO (pdakin): Use the LLM.
-  return {
-    title: "1996 Eurovision",
-    infoList: [
-      "The Eurovision Song Contest 1996 was the 41st edition of the Eurovision Song Contest.",
-      "The contest was held on 18 May 1996 at the Oslo Spektrum in Oslo, Norway.",
-      "The event was organised by the European Broadcasting Union (EBU) and host broadcaster Norsk rikskringkasting (NRK).",
-      "Norwegian journalist and television presenter Ingvild Bryn and Norwegian singer Morten Harket presented the contest.",
-      "The contest took place in Norway due to the country's victory at the 1995 contest with the song Nocturne by Secret Garden.",
-      "Thirty countries submitted entries to the contest.",
-      "A non-public, audio-only qualifying round was held two months before the final to reduce the number of participants from 30 to 23.",
-      "The entries from Denmark, Germany, Hungary, Israel, Macedonia, Romania and Russia were eliminated in the qualifying round.",
-      "As a result, Germany was absent from the contest for the first time.",
-      "Ireland won the contest with the song The Voice, which was written by Brendan Graham and performed by Eimear Quinn.",
-      "This victory extended Ireland's record to seven contest wins, including four wins in the last five years.",
-      "Brendan Graham also recorded his second win as a songwriter in three years, having previously written the winning song at the 1994 contest.",
-      "Norway, Sweden, Croatia and Estonia were the other top five countries.",
-      "Croatia, Estonia and Portugal achieved their best results to date, with Portugal placing sixth.",
-      "The 1996 contest was the final one where results were determined solely by jury voting.",
-      "A trial use of televoting was introduced in the following year's event, leading to widespread adoption from 1998 onwards.",
-    ],
-  };
+
+  const result = await submitPrompt(prompt);
+  if (!result) {
+    // TODO (pdakin): Do something better.
+    console.error("Null extraction of OpenAI response, returning default.");
+    return { title: "", infoList: [] };
+  }
+  return result;
 }
 
-function rank(extractionResult: { title: string; infoList: string[] }) {
-  const prompt = constructRankingPrompt(extractionResult);
-  // TODO (pdakin): Use the LLM.
-  return {
-    infoListScored: [
-      [
-        "The Eurovision Song Contest 1996 was the 41st edition of the Eurovision Song Contest.",
-        0.2,
-      ],
-      [
-        "The contest was held on 18 May 1996 at the Oslo Spektrum in Oslo, Norway.",
-        0.3,
-      ],
-      [
-        "The event was organised by the European Broadcasting Union (EBU) and host broadcaster Norsk rikskringkasting (NRK).",
-        0.2,
-      ],
-      [
-        "Norwegian journalist and television presenter Ingvild Bryn and Norwegian singer Morten Harket presented the contest.",
-        0.3,
-      ],
-      [
-        "The contest took place in Norway due to the country's victory at the 1995 contest with the song Nocturne by Secret Garden.",
-        0.6,
-      ],
-      ["Thirty countries submitted entries to the contest.", 0.3],
-      [
-        "A non-public, audio-only qualifying round was held two months before the final to reduce the number of participants from 30 to 23.",
-        0.4,
-      ],
-      [
-        "The entries from Denmark, Germany, Hungary, Israel, Macedonia, Romania and Russia were eliminated in the qualifying round.",
-        0.5,
-      ],
-      [
-        "As a result, Germany was absent from the contest for the first time.",
-        0.6,
-      ],
-      [
-        "Ireland won the contest with the song The Voice, which was written by Brendan Graham and performed by Eimear Quinn.",
-        0.9,
-      ],
-      [
-        "This victory extended Ireland's record to seven contest wins, including four wins in the last five years.",
-        0.8,
-      ],
-      [
-        "Brendan Graham also recorded his second win as a songwriter in three years, having previously written the winning song at the 1994 contest.",
-        0.7,
-      ],
-      [
-        "Norway, Sweden, Croatia and Estonia were the other top five countries.",
-        0.5,
-      ],
-      [
-        "Croatia, Estonia and Portugal achieved their best results to date, with Portugal placing sixth.",
-        0.5,
-      ],
-      [
-        "The 1996 contest was the final one where results were determined solely by jury voting.",
-        0.7,
-      ],
-      [
-        "A trial use of televoting was introduced in the following year's event, leading to widespread adoption from 1998 onwards.",
-        0.7,
-      ],
-    ],
-  };
+async function rank(extractionResult: { title: string; infoList: string[] }) {
+  const prompt = await constructRankingPrompt(extractionResult);
+  const result = await submitPrompt(prompt);
+  if (!result) {
+    // TODO (pdakin): Do something better.
+    console.error("Null extraction of OpenAI response, returning default.");
+    return [];
+  }
+  return result.info_list_scored;
 }
 
-function rewrite(partialInfoListScored: (string | number)[][]) {
-  let prompt = constructRewritePrompt(partialInfoListScored);
-  // TODO (pdakin): Use LLM.
-  return (
-    "Hey this is the result of a rewrite call " +
-    String(partialInfoListScored.length)
-  );
+async function rewrite(
+  title: string,
+  partialInfoListScored: (string | number)[][]
+) {
+  const prompt = await constructRewritePrompt(title, partialInfoListScored);
+  const result = await submitPrompt(prompt);
+  if (!result) {
+    // TODO (pdakin): Do something better.
+    console.error("Null extraction of OpenAI response, returning default.");
+    return "Rewrite failed!";
+  }
+  return result.text;
 }
 
 export function getTotalSummaryCount(infoListLength: number) {
@@ -148,15 +143,16 @@ export async function summarize(
     pageEntries: string[]
   ) => void
 ) {
-  // TODO (pdakin): It is really important this function is not called during a render cycle to avoid
+  // TODO (pdakin): It is really important this function is not called during render cycle to avoid
   // some API loop bug. How do I assert this?
 
   const extractResult = await extract(corpus);
-  const infoListScored = rank(extractResult).infoListScored;
+  const infoListScored = await rank(extractResult);
+
   const summaryCount = getTotalSummaryCount(infoListScored.length);
 
   const sortedInfoListScored = infoListScored
-    .map((e) => e) // TODO (pdakin): Cleaner way to deep copy?
+    .map((e: (string | number)[]) => e) // TODO (pdakin): Cleaner way to deep copy?
     .sort((l: (string | number)[], r: (string | number)[]) =>
       Number(l[1] < r[1])
     );
@@ -165,7 +161,11 @@ export async function summarize(
   let pageEntries = [corpus];
   for (let i = 1; i < summaryCount; i++) {
     const numEntries = sortedInfoListScored.length / Math.pow(2, i);
-    const text = rewrite(sortedInfoListScored.slice(0, numEntries));
+    // TODO (pdakin): These API calls are going to be slow as shit! Fix this.
+    const text = await rewrite(
+      extractResult.title,
+      sortedInfoListScored.slice(0, numEntries)
+    );
     pageEntries.push(text);
   }
 
