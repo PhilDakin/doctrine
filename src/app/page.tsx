@@ -14,7 +14,7 @@ import CustomPagination from "./CustomPagination";
 import Image from "next/image";
 import { useTheme } from "@mui/material/styles";
 import { Dispatch, SetStateAction, useState } from "react";
-import { summarize } from "./models/huggingface/Llm";
+import { summarize } from "./models/openai/Llm";
 
 // TODO (pdakin): Things you did in Figma to make it work on first pass maybe not always the best.
 // Is there a way to write this without so many <Paper/> layers?
