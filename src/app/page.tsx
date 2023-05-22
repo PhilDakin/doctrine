@@ -14,7 +14,7 @@ import CustomPagination from "./CustomPagination";
 import Image from "next/image";
 import { useTheme } from "@mui/material/styles";
 import { Dispatch, SetStateAction, useState } from "react";
-import { getTotalSummaryCount, summarize } from "./models/openai/Llm";
+import { summarize } from "./models/huggingface/Llm";
 
 // TODO (pdakin): Things you did in Figma to make it work on first pass maybe not always the best.
 // Is there a way to write this without so many <Paper/> layers?
@@ -235,7 +235,7 @@ function Display({
   setPageEntries,
 }: MainComponentProps) {
   const [page, setPage] = useState(1);
-  const numPages = getTotalSummaryCount(infoListScored.length);
+  const numPages = pageEntries.length;
   return (
     <Fade in={true} timeout={1200}>
       <Paper

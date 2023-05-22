@@ -9,7 +9,7 @@ import { Configuration, OpenAIApi } from "openai";
 
 const GPT_35_TURBO_API_CONTEXT_LIMIT = 4097;
 
-async function constructExtractionPrompt(corpus: string) {
+export async function constructExtractionPrompt(corpus: string) {
   // TODO (pdakin): Corpus sanitization.
   const response = await fetch(
     "/prompts?" + new URLSearchParams({ name: "extract" })
