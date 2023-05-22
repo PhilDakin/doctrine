@@ -1,5 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { EXTRACT_BASE, RANK_BASE, REWRITE_BASE } from "./prompts";
+import {
+  EXTRACT_BASE,
+  RANK_BASE,
+  REWRITE_BASE,
+} from "../models/openai/prompts";
 
 // TODO (pdakin): Confirm this is a private API.
 
