@@ -33,8 +33,6 @@ type MainComponentProps = {
   setState: Dispatch<SetStateAction<State>>;
   userText: string;
   setUserText: Dispatch<SetStateAction<string>>;
-  infoListScored: (string | number)[][];
-  setInfoListScored: Dispatch<SetStateAction<(string | number)[][]>>;
   pageEntries: string[];
   setPageEntries: Dispatch<SetStateAction<string[]>>;
   loadingState: string;
@@ -52,8 +50,6 @@ function getMainComponent(
   setState: Dispatch<SetStateAction<State>>,
   userText: string,
   setUserText: Dispatch<SetStateAction<string>>,
-  infoListScored: (string | number)[][],
-  setInfoListScored: Dispatch<SetStateAction<(string | number)[][]>>,
   pageEntries: string[],
   setPageEntries: Dispatch<SetStateAction<string[]>>,
   loadingState: string,
@@ -66,8 +62,6 @@ function getMainComponent(
           setState={setState}
           userText={userText}
           setUserText={setUserText}
-          infoListScored={infoListScored}
-          setInfoListScored={setInfoListScored}
           pageEntries={pageEntries}
           setPageEntries={setPageEntries}
           loadingState={loadingState}
@@ -81,8 +75,6 @@ function getMainComponent(
           setState={setState}
           userText={userText}
           setUserText={setUserText}
-          infoListScored={infoListScored}
-          setInfoListScored={setInfoListScored}
           pageEntries={pageEntries}
           setPageEntries={setPageEntries}
           loadingState={loadingState}
@@ -96,8 +88,6 @@ function getMainComponent(
           setState={setState}
           userText={userText}
           setUserText={setUserText}
-          infoListScored={infoListScored}
-          setInfoListScored={setInfoListScored}
           pageEntries={pageEntries}
           setPageEntries={setPageEntries}
           loadingState={loadingState}
@@ -111,8 +101,6 @@ function getMainComponent(
           setState={setState}
           userText={userText}
           setUserText={setUserText}
-          infoListScored={infoListScored}
-          setInfoListScored={setInfoListScored}
           pageEntries={pageEntries}
           setPageEntries={setPageEntries}
           loadingState={loadingState}
@@ -167,8 +155,6 @@ function Entry({
   setState,
   userText,
   setUserText,
-  infoListScored,
-  setInfoListScored,
   pageEntries,
   setPageEntries,
   loadingState,
@@ -215,13 +201,12 @@ function Entry({
               summarize(
                 (s: string) => setLoadingState(s),
                 userText,
-                (newInfoListScored, newPageEntries, error) => {
+                (newPageEntries, error) => {
                   if (error) {
                     setPageEntries([
                       "An error was encountered during summarization.",
                     ]);
                   } else {
-                    setInfoListScored(newInfoListScored);
                     setPageEntries(newPageEntries);
                   }
                   setState(State.DISPLAY);
@@ -245,8 +230,6 @@ function Loading({
   setState,
   userText,
   setUserText,
-  infoListScored,
-  setInfoListScored,
   pageEntries,
   setPageEntries,
   loadingState,
@@ -278,8 +261,6 @@ function Display({
   setState,
   userText,
   setUserText,
-  infoListScored,
-  setInfoListScored,
   pageEntries,
   setPageEntries,
 }: MainComponentProps) {
@@ -320,8 +301,7 @@ function Display({
 function HomeWrapper({ currKey, setKey }: HomeWrapperProps) {
   const [state, setState] = useState(State.WELCOME);
   const [userText, setUserText] = useState("");
-  const [infoListScored, setInfoListScored] = useState([[]]);
-  const [pageEntries, setPageEntries] = useState([]);
+  const [pageEntries, setPageEntries] = useState(Array<string>());
   const [loadingState, setLoadingState] = useState("");
 
   return (
@@ -369,8 +349,6 @@ function HomeWrapper({ currKey, setKey }: HomeWrapperProps) {
         setState,
         userText,
         setUserText,
-        infoListScored,
-        setInfoListScored,
         pageEntries,
         setPageEntries,
         loadingState,

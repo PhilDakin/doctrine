@@ -55,11 +55,7 @@ export function getTotalSummaryCount(infoListLength: number) {
 export async function summarize(
   setLoadingState: (arg: string) => void,
   corpus: string,
-  callback: (
-    infoListScored: (string | number)[][],
-    pageEntries: string[],
-    error?: boolean
-  ) => void
+  callback: (pageEntries: string[], error?: boolean) => void
 ) {
   try {
     // TODO (pdakin): It is really important this function is not called during render cycle to avoid
@@ -68,14 +64,14 @@ export async function summarize(
     setLoadingState("Extracting data...");
     const extractResult = await extract(corpus);
     if (!extractResult) {
-      callback([], [], true);
+      callback([], true);
       return;
     }
 
     setLoadingState("Ranking results...");
     const infoListScored = await rank(extractResult);
     if (!infoListScored) {
-      callback([], [], true);
+      callback([], true);
       return;
     }
 
@@ -105,13 +101,13 @@ export async function summarize(
 
     for (const entry of pageEntries) {
       if (!entry) {
-        callback([], [], true);
+        callback([], true);
       }
     }
 
     // TODO (pdakin): Actually necessary to keep scored list in state?
-    callback(infoListScored, pageEntries, false);
+    callback(pageEntries, false);
   } catch {
-    callback([], [], true);
+    callback([], true);
   }
 }
