@@ -179,4 +179,31 @@ Input:
 Output:
 {
 "text": "Celtic Studies, an academic discipline focusing on the study of the Celts, includes work from well-known authors such as Polybius, Posidonius, Pausanias, Diodorus Siculus, Julius Caesar, and Strabo. The modern form of Celtic studies finds its origins in the 16th and 17th centuries, a time marked by the rediscovery, publication, and translation of many classical authors. This field experienced a significant breakthrough in Celtic linguistics with the publication of 'Archaeologia Britannica' in 1707 by the Welsh scholar Edward Lhuyd. It was Lhuyd who first identified the Gaulish, British, and Irish languages as belonging to the same linguistic family. Further linguistic analysis was undertaken by James Parsons, who compared a 1000-word lexicon of Irish and Welsh, deducing that they shared a common origin. He also made comparisons of the numerals in many other languages."
+}
+
+Input:
+{
+"title": "1996 Eurovision",
+"info_list": [
+    "The Eurovision Song Contest 1996 was the 41st edition of the Eurovision Song Contest.",
+    "The contest was held on 18 May 1996 at the Oslo Spektrum in Oslo, Norway.",
+    "The event was organised by the European Broadcasting Union (EBU) and host broadcaster Norsk rikskringkasting (NRK).",
+    "Norwegian journalist and television presenter Ingvild Bryn and Norwegian singer Morten Harket presented the contest.",
+    "The contest took place in Norway due to the country's victory at the 1995 contest with the song Nocturne by Secret Garden.",
+    "Thirty countries submitted entries to the contest.",
+    "A non-public, audio-only qualifying round was held two months before the final to reduce the number of participants from 30 to 23.",
+    "The entries from Denmark, Germany, Hungary, Israel, Macedonia, Romania and Russia were eliminated in the qualifying round.",
+    "As a result, Germany was absent from the contest for the first time.",
+    "Ireland won the contest with the song The Voice, which was written by Brendan Graham and performed by Eimear Quinn.",
+    "This victory extended Ireland's record to seven contest wins, including four wins in the last five years.",
+    "Brendan Graham also recorded his second win as a songwriter in three years, having previously written the winning song at the 1994 contest.",
+    "Norway, Sweden, Croatia and Estonia were the other top five countries.",
+    "Croatia, Estonia and Portugal achieved their best results to date, with Portugal placing sixth.",
+    "The 1996 contest was the final one where results were determined solely by jury voting.",
+    "A trial use of televoting was introduced in the following year's event, leading to widespread adoption from 1998 onwards."
+    ]
+}
+Output:
+{
+    "text": "The 41st edition of the Eurovision Song Contest took place on 18 May 1996 at the Oslo Spektrum in Oslo, Norway. This prestigious event was organized by the European Broadcasting Union (EBU) and host broadcaster Norsk rikskringkasting (NRK), and presented by Norwegian journalist Ingvild Bryn and singer Morten Harket. The contest was held in Norway due to its victory in the 1995 contest with the song 'Nocturne' by Secret Garden. Thirty countries submitted entries to the contest, but a non-public, audio-only qualifying round held two months prior reduced the number of participants to 23. As a result, seven countries, including Denmark, Germany, Hungary, Israel, Macedonia, Romania, and Russia were eliminated in the qualifying round, marking Germany's first absence in the contest's history. Ireland claimed the victory with 'The Voice', written by Brendan Graham and performed by Eimear Quinn. This win extended Ireland's record to seven contest wins, with four in the last five years. Brendan Graham achieved his second win as a songwriter in three years, following his previous success in 1994. Other top performers included Norway, Sweden, Croatia, and Estonia. Meanwhile, Croatia, Estonia, and Portugal achieved their best results to date, with Portugal placing sixth. The 1996 contest was the last one where results were determined solely by jury voting. Starting from the next year, a trial use of televoting was introduced, leading to its widespread adoption from 1998 onwards."
 }`;

@@ -7,8 +7,6 @@
 
 import { Configuration, OpenAIApi } from "openai";
 
-const GPT_35_TURBO_API_CONTEXT_LIMIT = 4097;
-
 export async function constructExtractionPrompt(corpus: string) {
   // TODO (pdakin): Corpus sanitization.
   const response = await fetch(
@@ -137,38 +135,65 @@ export function getTotalSummaryCount(infoListLength: number) {
 }
 
 export async function summarize(
+  setLoadingState: (arg: string) => void,
   corpus: string,
   callback: (
     infoListScored: (string | number)[][],
-    pageEntries: string[]
+    pageEntries: string[],
+    error?: boolean
   ) => void
 ) {
-  // TODO (pdakin): It is really important this function is not called during render cycle to avoid
-  // some API loop bug. How do I assert this?
+  try {
+    // TODO (pdakin): It is really important this function is not called during render cycle to avoid
+    // some API loop bug. How do I assert this?
 
-  const extractResult = await extract(corpus);
-  const infoListScored = await rank(extractResult);
+    setLoadingState("Extracting data...");
+    const extractResult = await extract(corpus);
+    if (!extractResult) {
+      callback([], [], true);
+      return;
+    }
 
-  const summaryCount = getTotalSummaryCount(infoListScored.length);
+    setLoadingState("Ranking results...");
+    const infoListScored = await rank(extractResult);
+    if (!infoListScored) {
+      callback([], [], true);
+      return;
+    }
 
-  const sortedInfoListScored = infoListScored
-    .map((e: (string | number)[]) => e) // TODO (pdakin): Cleaner way to deep copy?
-    .sort((l: (string | number)[], r: (string | number)[]) =>
-      Number(l[1] < r[1])
-    );
+    const summaryCount = getTotalSummaryCount(infoListScored.length);
+    const sortedInfoListScored = infoListScored
+      .map((e: (string | number)[]) => e) // TODO (pdakin): Cleaner way to deep copy?
+      .sort((l: (string | number)[], r: (string | number)[]) =>
+        Number(l[1] < r[1])
+      );
 
-  // Summary at index zero is just the original text.
-  let pageEntries = [corpus];
-  for (let i = 1; i < summaryCount; i++) {
-    const numEntries = sortedInfoListScored.length / Math.pow(2, i);
-    // TODO (pdakin): These API calls are going to be slow as shit! Fix this.
-    const text = await rewrite(
-      extractResult.title,
-      sortedInfoListScored.slice(0, numEntries)
-    );
-    pageEntries.push(text);
+    // Summary at index zero is just the original text.
+    let pageEntryPromises = [];
+    setLoadingState("Writing summaries...");
+    for (let i = 1; i < summaryCount; i++) {
+      const numEntries = sortedInfoListScored.length / Math.pow(2, i);
+      const text = rewrite(
+        extractResult.title,
+        sortedInfoListScored
+          .slice(0, numEntries)
+          .map((entry: (string | number)[]) => entry[0])
+      );
+      pageEntryPromises.push(text);
+    }
+
+    let pageEntries = [corpus];
+    pageEntries = pageEntries.concat(await Promise.all(pageEntryPromises));
+
+    for (const entry of pageEntries) {
+      if (!entry) {
+        callback([], [], true);
+      }
+    }
+
+    // TODO (pdakin): Actually necessary to keep scored list in state?
+    callback(infoListScored, pageEntries, false);
+  } catch {
+    callback([], [], true);
   }
-
-  // TODO (pdakin): Actually necessary to keep scored list in state?
-  callback(infoListScored, pageEntries);
 }

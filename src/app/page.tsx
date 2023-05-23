@@ -20,6 +20,8 @@ import { summarize } from "./models/openai/Llm";
 // Is there a way to write this without so many <Paper/> layers?
 // TODO (pdakin): Is it odd to do a stateful SPA using Next.js like this? Why do I have no routing?
 
+const MAX_CONTENT_LENGTH_CHARACTERS = 5570;
+
 enum State {
   WELCOME,
   ENTRY,
@@ -35,6 +37,8 @@ type MainComponentProps = {
   setInfoListScored: Dispatch<SetStateAction<(string | number)[][]>>;
   pageEntries: string[];
   setPageEntries: Dispatch<SetStateAction<string[]>>;
+  loadingState: string;
+  setLoadingState: Dispatch<SetStateAction<string>>;
 };
 
 type HomeWrapperProps = {
@@ -51,7 +55,9 @@ function getMainComponent(
   infoListScored: (string | number)[][],
   setInfoListScored: Dispatch<SetStateAction<(string | number)[][]>>,
   pageEntries: string[],
-  setPageEntries: Dispatch<SetStateAction<string[]>>
+  setPageEntries: Dispatch<SetStateAction<string[]>>,
+  loadingState: string,
+  setLoadingState: Dispatch<SetStateAction<string>>
 ) {
   switch (state) {
     case State.WELCOME: {
@@ -64,6 +70,8 @@ function getMainComponent(
           setInfoListScored={setInfoListScored}
           pageEntries={pageEntries}
           setPageEntries={setPageEntries}
+          loadingState={loadingState}
+          setLoadingState={setLoadingState}
         />
       );
     }
@@ -77,6 +85,8 @@ function getMainComponent(
           setInfoListScored={setInfoListScored}
           pageEntries={pageEntries}
           setPageEntries={setPageEntries}
+          loadingState={loadingState}
+          setLoadingState={setLoadingState}
         />
       );
     }
@@ -90,6 +100,8 @@ function getMainComponent(
           setInfoListScored={setInfoListScored}
           pageEntries={pageEntries}
           setPageEntries={setPageEntries}
+          loadingState={loadingState}
+          setLoadingState={setLoadingState}
         />
       );
     }
@@ -103,6 +115,8 @@ function getMainComponent(
           setInfoListScored={setInfoListScored}
           pageEntries={pageEntries}
           setPageEntries={setPageEntries}
+          loadingState={loadingState}
+          setLoadingState={setLoadingState}
         />
       );
     }
@@ -120,6 +134,7 @@ function Welcome({ setState }: MainComponentProps) {
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
+          flex: "1",
         }}
       >
         <Paper sx={{ height: "55%", width: "40%" }} elevation={0}>
@@ -156,8 +171,11 @@ function Entry({
   setInfoListScored,
   pageEntries,
   setPageEntries,
+  loadingState,
+  setLoadingState,
 }: MainComponentProps) {
   const theme = useTheme();
+  const textViolation = userText.length > MAX_CONTENT_LENGTH_CHARACTERS;
   return (
     <Fade in={true} timeout={1200}>
       <Paper
@@ -167,6 +185,7 @@ function Entry({
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
+          flex: "1",
         }}
       >
         <Paper sx={{ height: "55%", width: "50%" }} elevation={0}>
@@ -180,15 +199,34 @@ function Entry({
               placeholder="Enter your corpus here..."
               value={userText}
               onChange={(e) => setUserText(e.target.value)}
+              error={textViolation}
+              helperText={
+                "Please enter less than " +
+                MAX_CONTENT_LENGTH_CHARACTERS +
+                " characters."
+              }
             />
           </Box>
           <Button
             onClick={() => {
-              summarize(userText, (newInfoListScored, newPageEntries) => {
-                // TODO (pdakin): Timing coordination with loading page when hitting API.
-                setInfoListScored(newInfoListScored);
-                setPageEntries(newPageEntries);
-              });
+              if (textViolation) {
+                return;
+              }
+              summarize(
+                (s: string) => setLoadingState(s),
+                userText,
+                (newInfoListScored, newPageEntries, error) => {
+                  if (error) {
+                    setPageEntries([
+                      "An error was encountered during summarization.",
+                    ]);
+                  } else {
+                    setInfoListScored(newInfoListScored);
+                    setPageEntries(newPageEntries);
+                  }
+                  setState(State.DISPLAY);
+                }
+              );
               setState(State.LOADING);
             }}
             sx={{ marginY: 1 }}
@@ -203,11 +241,17 @@ function Entry({
   );
 }
 
-function Loading({ setState }: MainComponentProps) {
-  // TODO (pdakin): Use API request success as transition here.
-  setTimeout(() => {
-    setState(State.DISPLAY);
-  }, 1000);
+function Loading({
+  setState,
+  userText,
+  setUserText,
+  infoListScored,
+  setInfoListScored,
+  pageEntries,
+  setPageEntries,
+  loadingState,
+  setLoadingState,
+}: MainComponentProps) {
   return (
     <Fade in={true} timeout={1200}>
       <Paper
@@ -217,9 +261,14 @@ function Loading({ setState }: MainComponentProps) {
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
+          flexDirection: "column",
+          flex: "1",
         }}
       >
-        <CircularProgress color="secondary" size={100} />
+        <CircularProgress color="secondary" sx={{ margin: 2.0 }} size={100} />
+        <Typography variant="h5" component={"span"}>
+          {loadingState}
+        </Typography>
       </Paper>
     </Fade>
   );
@@ -245,6 +294,7 @@ function Display({
           display: "flex",
           alignItems: "center",
           flexDirection: "column",
+          flex: "1",
         }}
       >
         <Paper
@@ -272,14 +322,13 @@ function HomeWrapper({ currKey, setKey }: HomeWrapperProps) {
   const [userText, setUserText] = useState("");
   const [infoListScored, setInfoListScored] = useState([[]]);
   const [pageEntries, setPageEntries] = useState([]);
+  const [loadingState, setLoadingState] = useState("");
 
-  // TODO (pdakin): Is there a more dynamic way to avoid setting minHeight below?
   return (
     <Paper
       sx={{
         width: "100vw",
-        height: "100vh",
-        minHeight: 600,
+        minHeight: "max(600px, 100vh)",
         display: "flex",
         flexDirection: "column",
       }}
@@ -323,7 +372,9 @@ function HomeWrapper({ currKey, setKey }: HomeWrapperProps) {
         infoListScored,
         setInfoListScored,
         pageEntries,
-        setPageEntries
+        setPageEntries,
+        loadingState,
+        setLoadingState
       )}
     </Paper>
   );
