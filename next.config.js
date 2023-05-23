@@ -16,15 +16,12 @@ const nextConfig = {
           },
           {
             key: "Content-Security-Policy",
-            value: "default-src 'self'",
+            // TODO (pdakin): Resolve react/webpack errors with 'unsafe-inline' and 'unsafe-eval' policies.
+            value: "default-src 'self' 'unsafe-inline' 'unsafe-eval'",
           },
           {
             key: "X-Content-Type-Options",
             value: "nosniff",
-          },
-          {
-            key: "Permissions-Policy",
-            value: "camera=(); battery=(); geolocation=(); microphone=()",
           },
           {
             key: "Referrer-Policy",
