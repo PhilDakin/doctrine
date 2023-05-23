@@ -1,133 +1,51 @@
-// TODO (pdakin): Hide your API key.
-// TODO (pdakin): Do we need to be worried about prompt injection?
-// TODO (pdakin): Prompt should NOT be visible to the user - right now this is completely fucked
-//                because of the client components theme issue.
-// TODO (pdakin): Use named types.
-// TODO (pdakin): API access will need to be asynchronous.
-
-import { Configuration, OpenAIApi } from "openai";
-
-export async function constructExtractionPrompt(corpus: string) {
-  // TODO (pdakin): Corpus sanitization.
-  const response = await fetch(
-    "/prompts?" + new URLSearchParams({ name: "extract" })
-  );
-  const json = await response.json();
-  const promptBase = json.base;
-  return `${promptBase}
-Input:
-{
-    "text": ${corpus};
-}`;
-}
-
-async function constructRankingPrompt(extractionResult: {
-  title: string;
-  infoList: string[];
-}) {
-  const response = await fetch(
-    "/prompts?" + new URLSearchParams({ name: "rank" })
-  );
-  const json = await response.json();
-  const promptBase = json.base;
-  return `${promptBase}
-Input:
-${JSON.stringify(extractionResult, null, 2)}`;
-}
-
-async function constructRewritePrompt(
-  title: string,
-  partialInfoListScored: (string | number)[][]
-) {
-  const response = await fetch(
-    "/prompts?" + new URLSearchParams({ name: "rewrite" })
-  );
-  const json = await response.json();
-  const promptBase = json.base;
-  return `${promptBase}
-Input:
-${JSON.stringify({ title: title, info_list: partialInfoListScored }, null, 2)}`;
-}
-
-// TODO (pdakin): Should not re-establish connection to OpenAI multiple times on each call.
-async function submitPrompt(prompt: string) {
-  const configuration = new Configuration({
-    // apiKey: process.env.OPENAI_API_KEY,
-    apiKey: "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",
-  });
-  const openai = new OpenAIApi(configuration);
-
-  const result = await openai.createChatCompletion({
-    model: "gpt-3.5-turbo",
-    messages: [
-      {
-        role: "user",
-        content: prompt,
-      },
-    ],
-    temperature: 0,
-    presence_penalty: 0.0, // TODO (pdakin): Presence penalty worth using?
-  });
-
-  // TODO (pdakin): Handling errors from OpenAI.
-
-  let response = result.data.choices[0];
-  console.log(
-    "Received OpenAI response with finish reason: ",
-    response.finish_reason
-  );
-  if (!response.message) {
-    console.log("Undefined message! This should never happen.");
-    return;
-  }
-
-  try {
-    const extractedInfo = JSON.parse(response.message.content.substring(8));
-    return extractedInfo;
-  } catch (extractionError) {
-    console.error(
-      "Failed to parse LLM response as JSON: ",
-      response.message.content
-    );
-    return null;
-  }
-}
-
 async function extract(corpus: string) {
-  const prompt = await constructExtractionPrompt(corpus);
-
-  const result = await submitPrompt(prompt);
-  if (!result) {
-    // TODO (pdakin): Do something better.
-    console.error("Null extraction of OpenAI response, returning default.");
-    return { title: "", infoList: [] };
-  }
-  return result;
+  return await (
+    await fetch("/models/openai", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        type: "extract",
+        corpus: corpus,
+      }),
+    })
+  ).json();
 }
 
 async function rank(extractionResult: { title: string; infoList: string[] }) {
-  const prompt = await constructRankingPrompt(extractionResult);
-  const result = await submitPrompt(prompt);
-  if (!result) {
-    // TODO (pdakin): Do something better.
-    console.error("Null extraction of OpenAI response, returning default.");
-    return [];
-  }
-  return result.info_list_scored;
+  return await (
+    await fetch("/models/openai", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        type: "rank",
+        extractionResult: extractionResult,
+      }),
+    })
+  ).json();
 }
 
 async function rewrite(
   title: string,
   partialInfoListScored: (string | number)[][]
 ) {
-  const prompt = await constructRewritePrompt(title, partialInfoListScored);
-  const result = await submitPrompt(prompt);
-  if (!result) {
-    // TODO (pdakin): Do something better.
-    console.error("Null extraction of OpenAI response, returning default.");
-    return "Rewrite failed!";
-  }
-  return result.text;
+  const rsp = await (
+    await fetch("/models/openai", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        type: "rewrite",
+        title: title,
+        infoListScored: partialInfoListScored,
+      }),
+    })
+  ).json();
+  return rsp.text;
 }
 
 export function getTotalSummaryCount(infoListLength: number) {
