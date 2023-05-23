@@ -1,50 +1,41 @@
+async function submit(body: Object) {
+  const rsp = await await fetch("/models/openai", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+  if (rsp.status === 500) {
+    throw Error("Error occurred on server!");
+  } else {
+    return rsp.json();
+  }
+}
+
 async function extract(corpus: string) {
-  return await (
-    await fetch("/models/openai", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        type: "extract",
-        corpus: corpus,
-      }),
-    })
-  ).json();
+  return await submit({
+    type: "extract",
+    corpus: corpus,
+  });
 }
 
 async function rank(extractionResult: { title: string; infoList: string[] }) {
-  return await (
-    await fetch("/models/openai", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        type: "rank",
-        extractionResult: extractionResult,
-      }),
-    })
-  ).json();
+  return await submit({
+    type: "rank",
+    extractionResult: extractionResult,
+  });
 }
 
 async function rewrite(
   title: string,
   partialInfoListScored: (string | number)[][]
 ) {
-  const rsp = await (
-    await fetch("/models/openai", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        type: "rewrite",
-        title: title,
-        infoListScored: partialInfoListScored,
-      }),
-    })
-  ).json();
+  const rsp = await submit({
+    type: "rewrite",
+    title: title,
+    infoListScored: partialInfoListScored,
+  });
   return rsp.text;
 }
 
@@ -60,17 +51,9 @@ export async function summarize(
   try {
     setLoadingState("Extracting data...");
     const extractResult = await extract(corpus);
-    if (!extractResult) {
-      callback([], true);
-      return;
-    }
 
     setLoadingState("Ranking results...");
     const infoListScored = await rank(extractResult);
-    if (!infoListScored) {
-      callback([], true);
-      return;
-    }
 
     const summaryCount = getTotalSummaryCount(infoListScored.length);
     const sortedInfoListScored = infoListScored
@@ -95,12 +78,6 @@ export async function summarize(
 
     let pageEntries = [corpus];
     pageEntries = pageEntries.concat(await Promise.all(pageEntryPromises));
-
-    for (const entry of pageEntries) {
-      if (!entry) {
-        callback([], true);
-      }
-    }
 
     callback(pageEntries, false);
   } catch {

@@ -51,50 +51,28 @@ async function submitPrompt(prompt: string) {
     temperature: 0,
   });
 
-  // TODO (pdakin): Handling errors from OpenAI.
-
   let response = result.data.choices[0];
   console.log(
     "Received OpenAI response with finish reason: ",
     response.finish_reason
   );
   if (!response.message) {
-    console.error("Undefined message! This should never happen.");
-    return;
+    throw Error("Undefined message! This should never happen.");
   }
 
-  try {
-    const extractedInfo = JSON.parse(response.message.content.substring(8));
-    return extractedInfo;
-  } catch (extractionError) {
-    console.error(
-      "Failed to parse LLM response as JSON: ",
-      response.message.content
-    );
-    return null;
-  }
+  const extractedInfo = JSON.parse(response.message.content.substring(8));
+  return extractedInfo;
 }
 
 async function extract(corpus: string) {
   const prompt = constructExtractionPrompt(corpus);
-
   const result = await submitPrompt(prompt);
-  if (!result) {
-    // TODO (pdakin): Do something better.
-    console.error("Null extraction of OpenAI response, returning default.");
-    return { title: "", infoList: [] };
-  }
   return result;
 }
 
 async function rank(extractionResult: { title: string; infoList: string[] }) {
   const prompt = constructRankingPrompt(extractionResult);
   const result = await submitPrompt(prompt);
-  if (!result) {
-    // TODO (pdakin): Do something better.
-    console.error("Null extraction of OpenAI response, returning default.");
-    return [];
-  }
   return result.info_list_scored;
 }
 
@@ -104,27 +82,26 @@ async function rewrite(
 ) {
   const prompt = constructRewritePrompt(title, partialInfoListScored);
   const result = await submitPrompt(prompt);
-  if (!result) {
-    // TODO (pdakin): Do something better.
-    console.error("Null extraction of OpenAI response, returning default.");
-    return "Rewrite failed!";
-  }
   return result.text;
 }
 
 export async function POST(request: NextRequest) {
   const requestInfo = await request.json();
-  switch (requestInfo.type) {
-    case "extract": {
-      return NextResponse.json(await extract(requestInfo.corpus));
+  try {
+    switch (requestInfo.type) {
+      case "extract": {
+        return NextResponse.json(await extract(requestInfo.corpus));
+      }
+      case "rank": {
+        return NextResponse.json(await rank(requestInfo.extractionResult));
+      }
+      case "rewrite": {
+        return NextResponse.json({
+          text: await rewrite(requestInfo.title, requestInfo.infoListScored),
+        });
+      }
     }
-    case "rank": {
-      return NextResponse.json(await rank(requestInfo.extractionResult));
-    }
-    case "rewrite": {
-      return NextResponse.json({
-        text: await rewrite(requestInfo.title, requestInfo.infoListScored),
-      });
-    }
+  } catch (error) {
+    return NextResponse.json({}, { status: 500 });
   }
 }
