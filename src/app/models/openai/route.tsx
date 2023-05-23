@@ -1,9 +1,5 @@
-// TODO (pdakin): Hide your API key.
 // TODO (pdakin): Do we need to be worried about prompt injection?
-// TODO (pdakin): Prompt should NOT be visible to the user - right now this is completely fucked
-//                because of the client components theme issue.
 // TODO (pdakin): Use named types.
-// TODO (pdakin): API access will need to be asynchronous.
 // TODO (pdakin): Console seems like a bad way to log - what is a good way?
 
 import { Configuration, OpenAIApi } from "openai";
@@ -11,7 +7,8 @@ import { EXTRACT_BASE, RANK_BASE, REWRITE_BASE } from "./prompts";
 import { NextRequest, NextResponse } from "next/server";
 
 function constructExtractionPrompt(corpus: string) {
-  // TODO (pdakin): Corpus sanitization.
+  // TODO (pdakin): Consider sanitization of input. Initial impression is that the model handles
+  // slightly incorrect inputs just fine.
   const promptBase = EXTRACT_BASE;
   return `${promptBase}
 Input:
