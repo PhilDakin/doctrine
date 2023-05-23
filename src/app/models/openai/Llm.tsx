@@ -58,9 +58,6 @@ export async function summarize(
   callback: (pageEntries: string[], error?: boolean) => void
 ) {
   try {
-    // TODO (pdakin): It is really important this function is not called during render cycle to avoid
-    // some API loop bug. How do I assert this?
-
     setLoadingState("Extracting data...");
     const extractResult = await extract(corpus);
     if (!extractResult) {

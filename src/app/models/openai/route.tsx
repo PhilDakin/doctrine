@@ -1,5 +1,3 @@
-// TODO (pdakin): Do we need to be worried about prompt injection?
-// TODO (pdakin): Use named types.
 // TODO (pdakin): Console seems like a bad way to log - what is a good way?
 
 import { Configuration, OpenAIApi } from "openai";
@@ -7,8 +5,7 @@ import { EXTRACT_BASE, RANK_BASE, REWRITE_BASE } from "./prompts";
 import { NextRequest, NextResponse } from "next/server";
 
 function constructExtractionPrompt(corpus: string) {
-  // TODO (pdakin): Consider sanitization of input. Initial impression is that the model handles
-  // slightly incorrect inputs just fine.
+  // TODO (pdakin): Consider sanitizing input.
   const promptBase = EXTRACT_BASE;
   return `${promptBase}
 Input:
@@ -116,7 +113,6 @@ async function rewrite(
 }
 
 export async function POST(request: NextRequest) {
-  // TODO (pdakin): Is there a way to automatically handle malformed requests?
   const requestInfo = await request.json();
   switch (requestInfo.type) {
     case "extract": {
