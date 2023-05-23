@@ -105,7 +105,6 @@ export async function summarize(
       }
     }
 
-    // TODO (pdakin): Actually necessary to keep scored list in state?
     callback(pageEntries, false);
   } catch {
     callback([], true);

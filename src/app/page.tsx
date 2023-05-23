@@ -29,7 +29,7 @@ enum State {
   DISPLAY,
 }
 
-type MainComponentProps = {
+type PageState = {
   setState: Dispatch<SetStateAction<State>>;
   userText: string;
   setUserText: Dispatch<SetStateAction<string>>;
@@ -44,74 +44,24 @@ type HomeWrapperProps = {
   setKey: Dispatch<SetStateAction<number>>;
 };
 
-// TODO (pdakin): Clean up argument blow-up below.
-function getMainComponent(
-  state: State,
-  setState: Dispatch<SetStateAction<State>>,
-  userText: string,
-  setUserText: Dispatch<SetStateAction<string>>,
-  pageEntries: string[],
-  setPageEntries: Dispatch<SetStateAction<string[]>>,
-  loadingState: string,
-  setLoadingState: Dispatch<SetStateAction<string>>
-) {
+function getMainComponent(state: State, pageState: PageState) {
   switch (state) {
     case State.WELCOME: {
-      return (
-        <Welcome
-          setState={setState}
-          userText={userText}
-          setUserText={setUserText}
-          pageEntries={pageEntries}
-          setPageEntries={setPageEntries}
-          loadingState={loadingState}
-          setLoadingState={setLoadingState}
-        />
-      );
+      return <Welcome {...pageState} />;
     }
     case State.ENTRY: {
-      return (
-        <Entry
-          setState={setState}
-          userText={userText}
-          setUserText={setUserText}
-          pageEntries={pageEntries}
-          setPageEntries={setPageEntries}
-          loadingState={loadingState}
-          setLoadingState={setLoadingState}
-        />
-      );
+      return <Entry {...pageState} />;
     }
     case State.LOADING: {
-      return (
-        <Loading
-          setState={setState}
-          userText={userText}
-          setUserText={setUserText}
-          pageEntries={pageEntries}
-          setPageEntries={setPageEntries}
-          loadingState={loadingState}
-          setLoadingState={setLoadingState}
-        />
-      );
+      return <Loading {...pageState} />;
     }
     case State.DISPLAY: {
-      return (
-        <Display
-          setState={setState}
-          userText={userText}
-          setUserText={setUserText}
-          pageEntries={pageEntries}
-          setPageEntries={setPageEntries}
-          loadingState={loadingState}
-          setLoadingState={setLoadingState}
-        />
-      );
+      return <Display {...pageState} />;
     }
   }
 }
 
-function Welcome({ setState }: MainComponentProps) {
+function Welcome({ setState }: PageState) {
   const theme = useTheme();
   return (
     <Fade in={true} timeout={1200}>
@@ -155,11 +105,9 @@ function Entry({
   setState,
   userText,
   setUserText,
-  pageEntries,
   setPageEntries,
-  loadingState,
   setLoadingState,
-}: MainComponentProps) {
+}: PageState) {
   const theme = useTheme();
   const textViolation = userText.length > MAX_CONTENT_LENGTH_CHARACTERS;
   return (
@@ -226,15 +174,7 @@ function Entry({
   );
 }
 
-function Loading({
-  setState,
-  userText,
-  setUserText,
-  pageEntries,
-  setPageEntries,
-  loadingState,
-  setLoadingState,
-}: MainComponentProps) {
+function Loading({ loadingState }: PageState) {
   return (
     <Fade in={true} timeout={1200}>
       <Paper
@@ -257,13 +197,7 @@ function Loading({
   );
 }
 
-function Display({
-  setState,
-  userText,
-  setUserText,
-  pageEntries,
-  setPageEntries,
-}: MainComponentProps) {
+function Display({ pageEntries }: PageState) {
   const [page, setPage] = useState(1);
   const numPages = pageEntries.length;
   return (
@@ -344,16 +278,15 @@ function HomeWrapper({ currKey, setKey }: HomeWrapperProps) {
           <Typography variant="h3">Doctrine</Typography>
         </Box>
       </AppBar>
-      {getMainComponent(
-        state,
+      {getMainComponent(state, {
         setState,
         userText,
         setUserText,
         pageEntries,
         setPageEntries,
         loadingState,
-        setLoadingState
-      )}
+        setLoadingState,
+      })}
     </Paper>
   );
 }
