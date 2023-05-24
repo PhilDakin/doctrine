@@ -15,6 +15,40 @@ Input:
 }`;
 }
 
+export async function forwardByteStreamWithTrim(
+  stream: ReadableStream,
+  trimCount: number
+) {
+  // TODO (pdakin): You are assuming stream type here.
+  const decoder = new TextDecoder();
+  const encoder = new TextEncoder();
+
+  // Trim first trimCount characters from a readable stream, put everything else into a new readable stream.
+  const ostream = new TransformStream();
+  const writer = ostream.writable.getWriter();
+  const readable = ostream.readable;
+  await writer.ready;
+
+  let trimmed = 0;
+  for await (const chunk of yieldStream(stream)) {
+    if (trimmed !== trimCount) {
+      const text = decoder.decode(chunk);
+      const toTrim = Math.min(trimCount, text.length);
+      const newText = text.substring(toTrim);
+      const newBytes = encoder.encode(newText);
+      writer.write(newBytes);
+    } else {
+      writer.write(chunk);
+    }
+  }
+
+  // Asynchronous close will succeed once all chunks are processed. This also indicates
+  // when downstream async read iterations should finish.
+  writer.close();
+
+  return readable;
+}
+
 function constructRankingPrompt(extractionResult: {
   title: string;
   infoList: string[];
