@@ -8,7 +8,8 @@ async function submit(body: Object) {
     },
     body: JSON.stringify(body),
   });
-  if (rsp.status === 500) {
+  if (rsp.status !== 200) {
+    console.log("Received error from server with status", rsp.status);
     throw Error("Error occurred on server!");
   } else {
     const text = await rsp.text();
@@ -81,7 +82,8 @@ export async function summarize(
     }
 
     callback(pageEntries, false);
-  } catch {
+  } catch (error) {
+    console.error(error);
     callback([], true);
   }
 }
