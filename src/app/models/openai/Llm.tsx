@@ -1,4 +1,11 @@
-const PREFIX_LENGTH = 8; // "Output:\n"
+function extractJson(text: string) {
+  // Goal of this function is to be somewhat robust to minor variations in LLM output.
+  const extracted = text.substring(
+    text.indexOf("{"),
+    text.lastIndexOf("}") + 1
+  );
+  return extracted;
+}
 
 async function submit(body: Object) {
   const rsp = await fetch("/models/openai", {
@@ -12,8 +19,8 @@ async function submit(body: Object) {
     console.log("Received error from server with status", rsp.status);
     throw Error("Error occurred on server!");
   } else {
-    const text = await rsp.text();
-    return JSON.parse(text.substring(PREFIX_LENGTH));
+    const text = extractJson(await rsp.text());
+    return JSON.parse(text);
   }
 }
 
