@@ -175,6 +175,7 @@ function Entry({
 }
 
 function Loading({ loadingState }: PageState) {
+  // TODO (pdakin): Showing a streamed token count would be nice for the loading page.
   return (
     <Fade in={true} timeout={1200}>
       <Paper

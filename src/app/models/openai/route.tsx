@@ -1,7 +1,8 @@
 // TODO (pdakin): Console seems like a bad way to log - what is a good way?
 
-import { Configuration, OpenAIApi } from "openai";
 import { EXTRACT_BASE, RANK_BASE, REWRITE_BASE } from "./prompts";
+import { OpenAI } from "openai-streams";
+import { yieldStream } from "yield-stream";
 import { NextRequest, NextResponse } from "next/server";
 
 export function constructExtractionPrompt(corpus: string) {
@@ -35,12 +36,7 @@ ${JSON.stringify({ title: title, info_list: partialInfoListScored }, null, 2)}`;
 }
 
 async function submitPrompt(prompt: string) {
-  const configuration = new Configuration({
-    apiKey: process.env.OPENAI_API_KEY,
-  });
-  const openai = new OpenAIApi(configuration);
-
-  const result = await openai.createChatCompletion({
+  const stream = await OpenAI("chat", {
     model: "gpt-3.5-turbo",
     messages: [
       {
@@ -51,16 +47,14 @@ async function submitPrompt(prompt: string) {
     temperature: 0,
   });
 
-  let response = result.data.choices[0];
-  console.log(
-    "Received OpenAI response with finish reason: ",
-    response.finish_reason
-  );
-  if (!response.message) {
-    throw Error("Undefined message! This should never happen.");
+  // TODO (pdakin): Add retries for robustness.
+  // TODO (pdakin): See about exposing finish_reason on openai-streams.
+  let response = "";
+  for await (const chunk of yieldStream(stream)) {
+    response += new TextDecoder().decode(chunk);
   }
 
-  const extractedInfo = JSON.parse(response.message.content.substring(8));
+  const extractedInfo = JSON.parse(response.substring(8));
   return extractedInfo;
 }
 
@@ -102,6 +96,7 @@ export async function POST(request: NextRequest) {
       }
     }
   } catch (error) {
+    console.error(error);
     return NextResponse.json({}, { status: 500 });
   }
 }
