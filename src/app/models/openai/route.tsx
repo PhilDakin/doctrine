@@ -4,7 +4,7 @@ import { Configuration, OpenAIApi } from "openai";
 import { EXTRACT_BASE, RANK_BASE, REWRITE_BASE } from "./prompts";
 import { NextRequest, NextResponse } from "next/server";
 
-function constructExtractionPrompt(corpus: string) {
+export function constructExtractionPrompt(corpus: string) {
   // TODO (pdakin): Consider sanitizing input.
   const promptBase = EXTRACT_BASE;
   return `${promptBase}
