@@ -36,6 +36,8 @@ ${JSON.stringify({ title: title, info_list: partialInfoListScored }, null, 2)}`;
 }
 
 async function submitPrompt(prompt: string) {
+  // TODO (pdakin): Add retries for robustness.
+  // TODO (pdakin): See about exposing finish_reason on openai-streams.
   const stream = await OpenAI("chat", {
     model: "gpt-3.5-turbo",
     messages: [
@@ -46,28 +48,17 @@ async function submitPrompt(prompt: string) {
     ],
     temperature: 0,
   });
-
-  // TODO (pdakin): Add retries for robustness.
-  // TODO (pdakin): See about exposing finish_reason on openai-streams.
-  let response = "";
-  for await (const chunk of yieldStream(stream)) {
-    response += new TextDecoder().decode(chunk);
-  }
-
-  const extractedInfo = JSON.parse(response.substring(8));
-  return extractedInfo;
+  return stream;
 }
 
 async function extract(corpus: string) {
   const prompt = constructExtractionPrompt(corpus);
-  const result = await submitPrompt(prompt);
-  return result;
+  return await submitPrompt(prompt);
 }
 
 async function rank(extractionResult: { title: string; infoList: string[] }) {
   const prompt = constructRankingPrompt(extractionResult);
-  const result = await submitPrompt(prompt);
-  return result.info_list_scored;
+  return await submitPrompt(prompt);
 }
 
 async function rewrite(
@@ -75,8 +66,7 @@ async function rewrite(
   partialInfoListScored: (string | number)[][]
 ) {
   const prompt = constructRewritePrompt(title, partialInfoListScored);
-  const result = await submitPrompt(prompt);
-  return result.text;
+  return await submitPrompt(prompt);
 }
 
 export async function POST(request: NextRequest) {
@@ -84,15 +74,15 @@ export async function POST(request: NextRequest) {
   try {
     switch (requestInfo.type) {
       case "extract": {
-        return NextResponse.json(await extract(requestInfo.corpus));
+        return new NextResponse(await extract(requestInfo.corpus));
       }
       case "rank": {
-        return NextResponse.json(await rank(requestInfo.extractionResult));
+        return new NextResponse(await rank(requestInfo.extractionResult));
       }
       case "rewrite": {
-        return NextResponse.json({
-          text: await rewrite(requestInfo.title, requestInfo.infoListScored),
-        });
+        return new NextResponse(
+          await rewrite(requestInfo.title, requestInfo.infoListScored)
+        );
       }
     }
   } catch (error) {

@@ -1,5 +1,7 @@
+const PREFIX_LENGTH = 8; // "Output:\n"
+
 async function submit(body: Object) {
-  const rsp = await await fetch("/models/openai", {
+  const rsp = await fetch("/models/openai", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -9,7 +11,8 @@ async function submit(body: Object) {
   if (rsp.status === 500) {
     throw Error("Error occurred on server!");
   } else {
-    return rsp.json();
+    const text = await rsp.text();
+    return JSON.parse(text.substring(PREFIX_LENGTH));
   }
 }
 
@@ -53,7 +56,7 @@ export async function summarize(
     const extractResult = await extract(corpus);
 
     setLoadingState("Ranking results...");
-    const infoListScored = await rank(extractResult);
+    const infoListScored = (await rank(extractResult)).info_list_scored;
 
     const summaryCount = getTotalSummaryCount(infoListScored.length);
     const sortedInfoListScored = infoListScored
@@ -63,21 +66,19 @@ export async function summarize(
       );
 
     // Summary at index zero is just the original text.
-    let pageEntryPromises = [];
+    let pageEntries = [corpus];
     setLoadingState("Writing summaries...");
     for (let i = 1; i < summaryCount; i++) {
       const numEntries = sortedInfoListScored.length / Math.pow(2, i);
-      const text = rewrite(
+      // TODO (pdakin): Resolve issue with concurrent requests when using streaming API.
+      const text = await rewrite(
         extractResult.title,
         sortedInfoListScored
           .slice(0, numEntries)
           .map((entry: (string | number)[]) => entry[0])
       );
-      pageEntryPromises.push(text);
+      pageEntries.push(text);
     }
-
-    let pageEntries = [corpus];
-    pageEntries = pageEntries.concat(await Promise.all(pageEntryPromises));
 
     callback(pageEntries, false);
   } catch {

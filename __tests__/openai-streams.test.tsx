@@ -21,7 +21,6 @@ it("openai-streams behaves as expected", async () => {
 
   let count = 0;
   for await (const chunk of yieldStream(stream)) {
-    console.log(new TextDecoder().decode(chunk));
     count++;
   }
   expect(count).toBeGreaterThan(1);
