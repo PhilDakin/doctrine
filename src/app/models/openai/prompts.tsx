@@ -207,3 +207,37 @@ Output:
 {
     "text": "The 41st edition of the Eurovision Song Contest took place on 18 May 1996 at the Oslo Spektrum in Oslo, Norway. This prestigious event was organized by the European Broadcasting Union (EBU) and host broadcaster Norsk rikskringkasting (NRK), and presented by Norwegian journalist Ingvild Bryn and singer Morten Harket. The contest was held in Norway due to its victory in the 1995 contest with the song 'Nocturne' by Secret Garden. Thirty countries submitted entries to the contest, but a non-public, audio-only qualifying round held two months prior reduced the number of participants to 23. As a result, seven countries, including Denmark, Germany, Hungary, Israel, Macedonia, Romania, and Russia were eliminated in the qualifying round, marking Germany's first absence in the contest's history. Ireland claimed the victory with 'The Voice', written by Brendan Graham and performed by Eimear Quinn. This win extended Ireland's record to seven contest wins, with four in the last five years. Brendan Graham achieved his second win as a songwriter in three years, following his previous success in 1994. Other top performers included Norway, Sweden, Croatia, and Estonia. Meanwhile, Croatia, Estonia, and Portugal achieved their best results to date, with Portugal placing sixth. The 1996 contest was the last one where results were determined solely by jury voting. Starting from the next year, a trial use of televoting was introduced, leading to its widespread adoption from 1998 onwards."
 }`;
+
+export function constructExtractionPrompt(corpus: string) {
+  // TODO (pdakin): Consider sanitizing input.
+  const promptBase = EXTRACT_BASE;
+  return `${promptBase}
+  Input:
+  {
+      "text": ${corpus};
+  }`;
+}
+
+export function constructRankingPrompt(extractionResult: {
+  title: string;
+  infoList: string[];
+}) {
+  const promptBase = RANK_BASE;
+  return `${promptBase}
+  Input:
+  ${JSON.stringify(extractionResult, null, 2)}`;
+}
+
+export function constructRewritePrompt(
+  title: string,
+  partialInfoListScored: (string | number)[][]
+) {
+  const promptBase = REWRITE_BASE;
+  return `${promptBase}
+  Input:
+  ${JSON.stringify(
+    { title: title, info_list: partialInfoListScored },
+    null,
+    2
+  )}`;
+}

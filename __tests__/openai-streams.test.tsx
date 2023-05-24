@@ -2,7 +2,7 @@
  * @jest-environment node
  */
 
-import { constructExtractionPrompt } from "@/app/models/openai/route";
+import { constructExtractionPrompt } from "@/app/models/openai/prompts";
 import { OpenAI } from "openai-streams";
 import { yieldStream } from "yield-stream";
 

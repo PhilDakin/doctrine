@@ -1,39 +1,12 @@
 // TODO (pdakin): Console seems like a bad way to log - what is a good way?
 
-import { EXTRACT_BASE, RANK_BASE, REWRITE_BASE } from "./prompts";
+import {
+  constructExtractionPrompt,
+  constructRankingPrompt,
+  constructRewritePrompt,
+} from "./prompts";
 import { OpenAI } from "openai-streams";
-import { yieldStream } from "yield-stream";
 import { NextRequest, NextResponse } from "next/server";
-
-export function constructExtractionPrompt(corpus: string) {
-  // TODO (pdakin): Consider sanitizing input.
-  const promptBase = EXTRACT_BASE;
-  return `${promptBase}
-Input:
-{
-    "text": ${corpus};
-}`;
-}
-
-function constructRankingPrompt(extractionResult: {
-  title: string;
-  infoList: string[];
-}) {
-  const promptBase = RANK_BASE;
-  return `${promptBase}
-Input:
-${JSON.stringify(extractionResult, null, 2)}`;
-}
-
-function constructRewritePrompt(
-  title: string,
-  partialInfoListScored: (string | number)[][]
-) {
-  const promptBase = REWRITE_BASE;
-  return `${promptBase}
-Input:
-${JSON.stringify({ title: title, info_list: partialInfoListScored }, null, 2)}`;
-}
 
 async function submitPrompt(prompt: string) {
   // TODO (pdakin): Add retries for robustness.
