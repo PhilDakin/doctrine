@@ -37,6 +37,8 @@ type PageState = {
   setPageEntries: Dispatch<SetStateAction<string[]>>;
   loadingState: string;
   setLoadingState: Dispatch<SetStateAction<string>>;
+  count: number;
+  setCount: Dispatch<SetStateAction<number>>;
 };
 
 type HomeWrapperProps = {
@@ -107,6 +109,7 @@ function Entry({
   setUserText,
   setPageEntries,
   setLoadingState,
+  setCount,
 }: PageState) {
   const theme = useTheme();
   const textViolation = userText.length > MAX_CONTENT_LENGTH_CHARACTERS;
@@ -148,6 +151,7 @@ function Entry({
               }
               summarize(
                 (s: string) => setLoadingState(s),
+                (c: number) => setCount(c),
                 userText,
                 (newPageEntries, error) => {
                   if (error) {
@@ -174,7 +178,7 @@ function Entry({
   );
 }
 
-function Loading({ loadingState }: PageState) {
+function Loading({ loadingState, count }: PageState) {
   // TODO (pdakin): Showing a streamed token count would be nice for the loading page.
   return (
     <Fade in={true} timeout={1200}>
@@ -189,9 +193,12 @@ function Loading({ loadingState }: PageState) {
           flex: "1",
         }}
       >
-        <CircularProgress color="secondary" sx={{ margin: 2.0 }} size={100} />
         <Typography variant="h5" component={"span"}>
           {loadingState}
+        </Typography>
+        <CircularProgress color="secondary" sx={{ margin: 2.0 }} size={100} />
+        <Typography variant="h5" component={"span"}>
+          Received {count} characters from OpenAI
         </Typography>
       </Paper>
     </Fade>
@@ -238,6 +245,7 @@ function HomeWrapper({ currKey, setKey }: HomeWrapperProps) {
   const [userText, setUserText] = useState("");
   const [pageEntries, setPageEntries] = useState(Array<string>());
   const [loadingState, setLoadingState] = useState("");
+  const [count, setCount] = useState(0);
 
   return (
     <Paper
@@ -287,6 +295,8 @@ function HomeWrapper({ currKey, setKey }: HomeWrapperProps) {
         setPageEntries,
         loadingState,
         setLoadingState,
+        count,
+        setCount,
       })}
     </Paper>
   );

@@ -1,3 +1,5 @@
+import { yieldStream } from "yield-stream";
+
 function extractJson(text: string) {
   // Goal of this function is to be somewhat robust to minor variations in LLM output.
   const extracted = text.substring(
@@ -7,7 +9,17 @@ function extractJson(text: string) {
   return extracted;
 }
 
-async function submit(body: Object) {
+async function streamToString(stream: ReadableStream): Promise<string> {
+  const chunks: Array<any> = [];
+  for await (let chunk of yieldStream(stream)) {
+    chunks.push(chunk);
+  }
+  const buffer = Buffer.concat(chunks);
+  return buffer.toString("utf-8");
+}
+
+async function submit(body: Object, countCallback: (c: number) => void) {
+  countCallback(0);
   const rsp = await fetch("/models/openai", {
     method: "POST",
     headers: {
@@ -19,34 +31,61 @@ async function submit(body: Object) {
     console.log("Received error from server with status", rsp.status);
     throw Error("Error occurred on server!");
   } else {
-    const text = extractJson(await rsp.text());
+    if (!rsp.body) {
+      throw Error("Null body in success response!");
+    }
+
+    const forkedBody = rsp.body.tee();
+    const decoder = new TextDecoder();
+
+    let received = 0;
+    for await (const chunk of yieldStream(forkedBody[0])) {
+      const text = decoder.decode(chunk);
+      received += text.length;
+      countCallback(received);
+    }
+
+    const text = extractJson(await streamToString(forkedBody[1]));
     return JSON.parse(text);
   }
 }
 
-async function extract(corpus: string) {
-  return await submit({
-    type: "extract",
-    corpus: corpus,
-  });
+async function extract(corpus: string, countCallback: (c: number) => void) {
+  return await submit(
+    {
+      type: "extract",
+      corpus: corpus,
+    },
+    countCallback
+  );
 }
 
-async function rank(extractionResult: { title: string; infoList: string[] }) {
-  return await submit({
-    type: "rank",
-    extractionResult: extractionResult,
-  });
+async function rank(
+  extractionResult: { title: string; infoList: string[] },
+  countCallback: (c: number) => void
+) {
+  return await submit(
+    {
+      type: "rank",
+      extractionResult: extractionResult,
+    },
+    countCallback
+  );
 }
 
 async function rewrite(
   title: string,
-  partialInfoListScored: (string | number)[][]
+  partialInfoListScored: (string | number)[][],
+  countCallback: (c: number) => void
 ) {
-  const rsp = await submit({
-    type: "rewrite",
-    title: title,
-    infoListScored: partialInfoListScored,
-  });
+  const rsp = await submit(
+    {
+      type: "rewrite",
+      title: title,
+      infoListScored: partialInfoListScored,
+    },
+    countCallback
+  );
   return rsp.text;
 }
 
@@ -56,15 +95,17 @@ export function getTotalSummaryCount(infoListLength: number) {
 
 export async function summarize(
   setLoadingState: (arg: string) => void,
+  setCount: (arg: number) => void,
   corpus: string,
   callback: (pageEntries: string[], error?: boolean) => void
 ) {
   try {
-    setLoadingState("Extracting data...");
-    const extractResult = await extract(corpus);
+    setLoadingState("Extracting Data");
+    const extractResult = await extract(corpus, setCount);
 
-    setLoadingState("Ranking results...");
-    const infoListScored = (await rank(extractResult)).info_list_scored;
+    setLoadingState("Ranking Results");
+    const infoListScored = (await rank(extractResult, setCount))
+      .info_list_scored;
 
     const summaryCount = getTotalSummaryCount(infoListScored.length);
     const sortedInfoListScored = infoListScored
@@ -75,15 +116,16 @@ export async function summarize(
 
     // Summary at index zero is just the original text.
     let pageEntries = [corpus];
-    setLoadingState("Writing summaries...");
     for (let i = 1; i < summaryCount; i++) {
+      setLoadingState("Writing Summary " + i + "/" + (summaryCount - 1));
       const numEntries = sortedInfoListScored.length / Math.pow(2, i);
-      // TODO (pdakin): Resolve issue with concurrent requests when using streaming API.
+      // TODO (pdakin): Resolve issue with concurrent requests when using streaming API incl. count agg.
       const text = await rewrite(
         extractResult.title,
         sortedInfoListScored
           .slice(0, numEntries)
-          .map((entry: (string | number)[]) => entry[0])
+          .map((entry: (string | number)[]) => entry[0]),
+        setCount
       );
       pageEntries.push(text);
     }
